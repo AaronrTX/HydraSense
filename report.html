@@ -1,1 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+       <meta charset="UTF-8">
+       <meta name="viewport" content="width=deevice-width, inital-scale=1.0">
+       <title>Fire Hydrant Data Reports</title>
+       <style>
+            body {
+                font-family: Arial, Helvetica, sans-serif;
+                margin:0; 
+                padding:0; 
+                background-color: #f9f9f9;
 
+            }
+            header {
+                background-color: black;
+                color: white; 
+                padding: 15px 20px;
+                text-align: center;
+            }
+            main {
+                margin: 20px auto; 
+                max-width: 600px; 
+                padding: 20px; 
+                background: #ffffff;
+                border-radius: 8px;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                text-align: center;
+            }
+            select, button {
+                padding: 10px; 
+                margin: 10px auto; 
+                font-size: 16px;
+                border: 1px solid #ccc; 
+                border-radius: 4px;
+                display: block;
+            }
+            button {
+                background-color: blue;
+                color: white; 
+                cursor: pointer; 
+                margin: 40px auto; 
+                display: block;
+            }
+            button:hover {
+                background-color: grey;
+            }
+       </style> 
+    </head>
+    <body>
+        <header>
+            <h1>Daily Reports</h1>
+            <main>
+                <h2>Select a report</h2>
+                <p>Choose a report from the dropdown menu below and click download to get it</p>
+                <form id="reportForm">
+                    <label for="report">Available Reports:</label>
+                    <select id="report" name="report">
+                        <option value = "pressure_report.pdf">Hydrant Pressure Report</option>
+                        <option value="flow_report.pdf">Hydrant Flow Report</option>
+                        <option value="position_report.pdf">Valve Position Report</option>
+                    </select>
+                    <br>
+                    <button type="button" onclick="downloadReport()">Download</button>
+                </form>
+            </main>
+
+            <script>
+                function downloadReport(){
+                    const report = document.getElementById('report').value; 
+                    const link = document.createElement('a');
+                    link.href = report; 
+                    link.download = report; 
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                }
+
+            </script>
+
+
+        </header>
+    </body>
+</html>
