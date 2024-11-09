@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fire Hydrant Monitoring</title>
+    <style>
+        /* CSS Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            height: 100%;
+            width: 100%;
+            font-family: Arial, sans-serif;
+            background-color: #f7f9fc;
+            color: #333;
+            display: flex;
+        }
+
+        header{
+            background-color: #d8dbe6;
+            padding: 20px;
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+            color: #444;
+        }
+
+        .sidebar {
+            width: 15%;
+            min-width: 150px;
+            background-color: #2e3b4e;
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-top: 20px;
+            transition: transform 0.3s ease;
+            padding-top: 4%;
+        }
+
+        /* Hamburger Button Style */
+        .hamburger {
+            display: none;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 10px;
+            color: #444;
+            background-color: #d8dbe6;
+            border: none;
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            z-index: 10;
+        }
+
+        /* Full-width sidebar on larger screens */
+        @media (min-width: 769px) {
+            .sidebar {
+                transform: translateX(0); /* Sidebar visible */
+            }
+        }
+
+        /* Sidebar and hamburger for smaller screens */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 60%; 
+                height: 100%; 
+                position: fixed;
+                top: 0;
+                left: 0;
+                transform: translateX(-100%); 
+            }
+
+            .sidebar.show {
+                transform: translateX(0); 
+            }
+
+            .hamburger {
+                display: block; 
+                }}
+
+        .sidebar h2 {
+            margin-bottom: 30px;
+            font-size: 20px;
+        }
+
+        .sidebar a {
+            color: #fff;
+            text-decoration: none;
+            margin: 15px 0;
+            font-size: 18px;
+            transition: color 0.3s;
+        }
+
+        .sidebar a:hover {
+            color: #a2d2ff;
+        }
+
+        .main-content {
+            flex: 1;
+
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        header {
+            width: 100%;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        header h1 {
+            font-size: 24px;
+            color: #2e3b4e;
+        }
+
+        .metrics {
+            display: flex; 
+            justify-content: center;
+            gap: 50px;
+            margin-bottom: 20px;
+            width: 80%;
+            height: 55%;
+            
+        }
+        .metric {
+            text-align: center;
+            flex: 1;
+            margin-top: 10%;
+            margin-bottom: 10%;
+            border: 2px solid #d1d1d1;
+            background-color: #ffffff;
+            height:55%; 
+        }
+        
+
+       
+        @media (min-width: 768px) {
+            .metric {
+                flex: 1 1 45%; 
+            }
+        } */
+
+        .metric h2 {
+            font-size: 20px;
+            color: #2e3b4e;
+        }
+
+        .icon {
+            width: 80px;
+            height: 80px;
+        }
+
+        .alerts {
+            margin-top: 30px;
+            width: 100%;
+            max-width: 500px;
+        }
+
+        .alerts h2 {
+            font-size: 20px;
+            margin-bottom: 10px;
+            color: #d9534f;
+        }
+
+        .alert {
+            padding: 8px;
+            margin: 5px 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            background-color: #f9f9f9;
+            color: #d9534f;
+        }
+
+        .info-button {
+            margin-top: 10px;
+            padding: 5px 10px;
+            font-size: 14px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .info-button:hover {
+            background-color: #0056b3;
+        }
+
+        @media (max-width: 800px) {
+            .metrics {
+                flex-direction: column;
+                align-items: center;
+                margin-top: 70px;
+                gap: 5px;
+            }
+            .metric {
+                width: 90%; 
+                padding: 5%; 
+    }
+        }
+    </style>
+</head>
+
+<body>
+    <button class="hamburger" onclick="toggleSidebar()">☰</button>
+    <div class="sidebar" id="sidebar">
+        <a href="#">Homepage</a>
+        <a href="report.html">Report</a>
+        <a href="#">Maps</a>
+    </div>
+
+    <div class="main-content">
+        <header>
+            <h1>Homepage</h1>
+        </header>
+
+        <section class="metrics">
+            <div class="metric">
+                <img src="pressure.png" alt="Pressure Icon" class="icon">
+                <h2>Pressure</h2>
+                <p id="pressureValue">--</p>
+                <button class="info-button" onclick="showMoreInfo('pressure')">More Info</button>
+            </div>
+            <div class="metric">
+                <img src="flow.png" alt="Flow Icon" class="icon">
+                <h2>Flow</h2>
+                <p id="flowValue">--</p>
+                <button class="info-button" onclick="showMoreInfo('flow')">More Info</button>
+            </div>
+        </section>
+
+        <section class="alerts">
+            <h2>Alerts</h2>
+            <ul id="alertList">
+                <li class="alert" id="flowAlert">⚠️ These are random values</li>
+
+                <li class="alert" id="flowAlert">⚠️ Water flow high/Exceeding set amount</li>
+                <li class="alert" id="pressureAlert">⚠️ Water pressure high/Exceeding set amount</li>
+                <li class="alert" id="disconnectedAlert">⚠️ Disconnected</li>
+            </ul>
+        </section>
+    </div>
+
+    <script>
+        // JavaScript for fetching and displaying data
+        function fetchSensorData() {
+            return {
+                pressure: Math.floor(Math.random() * 100), 
+                flow: Math.floor(Math.random() * 100), 
+                alerts: {
+                    flowHigh: Math.random() > 0.5, 
+                    pressureHigh: Math.random() > 0.5,
+                    disconnected: Math.random() > 0.5
+                }
+            };
+        }
+
+        function updateUI(data) {
+            document.getElementById("pressureValue").textContent = data.pressure + " PSI";
+            document.getElementById("flowValue").textContent = data.flow + " L/min";
+
+            document.getElementById("flowAlert").style.display = data.alerts.flowHigh ? "block" : "none";
+            document.getElementById("pressureAlert").style.display = data.alerts.pressureHigh ? "block" : "none";
+            document.getElementById("disconnectedAlert").style.display = data.alerts.disconnected ? "block" : "none";
+        }
+
+        function showMoreInfo(type) {
+            alert(type === 'pressure' ? "More information on Pressure" : "More information on Flow");
+        }
+
+        setInterval(() => {
+            const data = fetchSensorData();
+            updateUI(data);
+        }, 5000); // Refresh every 5 seconds
+        function toggleSidebar() {
+                const sidebar = document.getElementById("sidebar");
+                sidebar.classList.toggle("show"); // Toggle sidebar visibility
+            }
+    </script>
+</body>
+
+</html>
