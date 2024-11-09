@@ -1,1 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fire Hydrant Monitoring</title>
+
+  <!-- Flatpickr CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+
+  <style>
+
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+    }
+
+    
+    .sidebar {
+      background-color: #2A557F;
+      color: white;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .sidebar-logo {
+      width: 80px;
+      margin-top: 20px;
+    }
+
+ 
+    .main-content {
+      background-color: #f0f0f0;
+      padding: 20px;
+      flex-grow: 1;
+    }
+
+    
+    .report-list {
+      background-color: #e0e0e0;
+      padding: 20px;
+      border-radius: 8px;
+    }
+
+    .report-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background-color: #d3d3d3;
+      padding: 10px;
+      margin-bottom: 10px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    .report-item:hover {
+      background-color: #c1c1c1;
+    }
+
+   
+    .status-icon {
+      width: 20px;
+      height: 20px;
+      margin-left: 10px;
+    }
+
+
+    .date-selection, .report-detail {
+      margin-top: 20px;
+      display: none;
+      background-color: #fff;
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+    }
+
+   
+    .back-button, .download-button, .hydrant-back-button {
+      margin-top: 20px;
+      padding: 8px 16px;
+      font-size: 16px;
+      cursor: pointer;
+      background-color: #007BFF;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      text-align: center;
+    }
+
+    .back-button:hover, .download-button:hover, .hydrant-back-button:hover {
+      background-color: #0056b3;
+    }
+
+  
+    @media (min-width: 768px) {
+      body {
+        flex-direction: row;
+      }
+
+      .sidebar {
+        width: 20%;
+        min-height: 100vh;
+      }
+
+      .main-content {
+        width: 80%;
+      }
+    }
+
+    @media (max-width: 767px) {
+      .sidebar h2 {
+        font-size: 24px;
+      }
+
+      .report-item {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 15px;
+      }
+
+      .status-icon {
+        margin: 10px 0 0;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .sidebar-logo {
+        width: 60px;
+      }
+
+      .main-content {
+        padding: 15px;
+      }
+
+      .report-item {
+        font-size: 14px;
+      }
+
+      .back-button, .download-button, .hydrant-back-button {
+        font-size: 14px;
+        padding: 6px 12px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+
+  <div class="sidebar">
+    <h2>Fire Hydrant Monitoring System</h2>
+    <img src="Hydrasense.png" alt="Hydra Sense Logo" class="sidebar-logo">
+  </div>
+
+  
+  <div class="main-content">
+    <h2>Fire Hydrant Reports</h2>
+
+
+    <div class="report-list" id="hydrant-selection">
+      <div class="report-item" onclick="selectHydrant('hydrant1')">
+        <span>Hydrant #1</span>
+        <img src="firehydrant.jpg" alt="Status Icon" class="status-icon">
+      </div>
+      <div class="report-item" onclick="selectHydrant('hydrant2')">
+        <span>Hydrant #2</span>
+        <img src="firehydrant.jpg" alt="Status Icon" class="status-icon">
+      </div>
+      <div class="report-item" onclick="selectHydrant('hydrant3')">
+        <span>Hydrant #3</span>
+        <img src="firehydrant.jpg" alt="Status Icon" class="status-icon">
+      </div>
+      <div class="report-item" onclick="selectHydrant('hydrant4')">
+        <span>Hydrant #4</span>
+        <img src="firehydrant.jpg" alt="Status Icon" class="status-icon">
+      </div>
+    </div>
+
+  
+    <div id="date-selection" class="date-selection">
+      <h3>Select Report Date</h3>
+      <input id="date-picker" type="text" placeholder="Choose a date" readonly>
+      <button class="hydrant-back-button" onclick="goToHydrantSelection()">Back to Hydrant Selection</button>
+    </div>
+
+   
+    <div id="report-detail" class="report-detail">
+      <h3 id="report-title"></h3>
+      <p id="report-content">The data for the selected hydrant and date will be displayed here.</p>
+      <button class="back-button" onclick="goBack()">Return to Date Selection</button>
+      <a id="download-button" class="download-button" href="#" download>Download Report</a>
+    </div>
+  </div>
+
+  <!-- Flatpickr JavaScript -->
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
+  <script>
+    let datePickerInstance;
+    let selectedHydrantId;
+
+    function initializeDatePicker(hydrantId) {
+      selectedHydrantId = hydrantId;
+      if (datePickerInstance) {
+        datePickerInstance.destroy();
+      }
+      datePickerInstance = flatpickr("#date-picker", {
+        dateFormat: "Y-m-d",
+        onChange: function(selectedDates, dateStr) {
+          showReportDetail(hydrantId, dateStr);
+        }
+      });
+    }
+
+    function selectHydrant(hydrantId) {
+      document.getElementById('date-selection').style.display = 'block';
+      document.getElementById('hydrant-selection').style.display = 'none';
+      document.getElementById('report-detail').style.display = 'none';
+      initializeDatePicker(hydrantId);
+    }
+
+    function showReportDetail(hydrantId, date) {
+      document.getElementById('date-selection').style.display = 'none';
+      document.getElementById('report-detail').style.display = 'block';
+      document.getElementById('report-title').innerText = `Report for Hydrant #${hydrantId.replace('hydrant', '')} on ${new Date(date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}`;
+      document.getElementById('report-content').innerText = `Here is the detailed report for Hydrant #${hydrantId.replace('hydrant', '')} on ${new Date(date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}.`;
+      const downloadButton = document.getElementById('download-button');
+      downloadButton.href = `reports/${hydrantId}-${date}.pdf`;
+      downloadButton.download = `Report_Hydrant_${hydrantId.replace('hydrant', '')}_${date}.pdf`;
+    }
+
+    function goBack() {
+      document.getElementById('report-detail').style.display = 'none';
+      document.getElementById('date-selection').style.display = 'block';
+    }
+
+    function goToHydrantSelection() {
+      document.getElementById('date-selection').style.display = 'none';
+      document.getElementById('hydrant-selection').style.display = 'block';
+    }
+  </script>
+</body>
+</html>
 
