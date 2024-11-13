@@ -13,7 +13,7 @@ This page will hold the coed as well as the instructions on how to set up influx
 2) Pick some sample data from the following website (https://docs.influxdata.com/influxdb/cloud/reference/sample-data/)
 3) You will need to copy the function for each dataset into the Query Builder so you can get access to it
 
-Grafana Set Up (Windows) 
+**Grafana Set Up (Windows)** 
 1) Go to the following website and download the installer (https://grafana.com/grafana/download)
 2) Hit Next until its complete
 3) To activate Grafana go to Windows Start -> Services -> Grafana -> Start
@@ -40,7 +40,8 @@ To be able to embedd the grafana panels onto the HTML Page follow these steps :
      enabled = true
      org_name = <<org name>> (could leave it as is)
      org_role = Viewer
-**YOU WILL NEED TO RESTART GRAFANA TO SEE THESE CHANGES **
+
+**YOU WILL NEED TO RESTART GRAFANA TO SEE THESE CHANGES**
 Go to Windows Start -> Services -> Grafana -> Click on Restart (BOOM Youre done) 
 
 
