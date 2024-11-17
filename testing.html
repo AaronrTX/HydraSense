@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Google Map with Local GeoJSON</title>
+        <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD3NU0Kn25hEP9deBiQ4gY9CIIEO0VgM4Q"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/proj4js/2.8.0/proj4.js"></script>
+        <style>
+            html,
+            body {
+                height: 100%;
+                margin: 0;
+                padding: 0;
+            }
+            .sidebar {
+                width: 15%;
+                height: 100%;
+                float: left;
+                z-index: 1;
+            }
+            .container {
+                display: flex;
+                height: 100%;
+            }
+            #map {
+                height: 100%;
+                flex-grow: 1;
+            }
+        </style>
+    </head>
+
+    <body>
+        <div class="container">
+            <iframe
+                src="sidebar.html"
+                width="15%"
+                height="100%"
+                frameborder="0"
+            ></iframe>
+            <div id="map"></div>
+        </div>
+
+        <script>
+            function resizemap() {
+                const mapDiv = document.getElementById("map");
+                const sidebarHeight =
+                    document.querySelector(".sidebar").offsetHeight;
+                mapDiv.style.height = sidebarHeight + "px";
+            }
+            window.onload = () => {
+                initMap;
+                resizemap();
+                window.addEventListener("resize", resizemap);
+            };
+            function initMap() {
+                const map = new google.maps.Map(
+                    document.getElementById("map"),
+                    {
+                        center: {
+                            lat: 32.7357,
+                            lng: -97.1081,
+                        },
+                        zoom: 12,
+                    }
+                );
+
+                proj4.defs(
+                    "EPSG:2276",
+                    "+proj=lcc +lat_1=32.78333333333333 +lat_2=33.88333333333333 +lat_0=32.16666666666666 +lon_0=-97.33333333333333 +x_0=600000 +y_0=3999999.999999999 +ellps=GRS80 +datum=NAD83 +to_meter=0.3048006096012192 +no_defs"
+                ); // EPSG:2276
+                proj4.defs(
+                    "EPSG:4326",
+                    "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs"
+                ); // WGS84
+
+                const geojsonData = {
+                    type: "FeatureCollection",
+                    name: "geojson_file",
+                    crs: {
+                        type: "name",
+                        properties: {
+                            name: "urn:ogc:def:crs:EPSG::2276",
+                        },
+                    },
+                    features: [
+                        {
+                            type: "Feature",
+                            properties: {
+                                UT_GISID: "H02FH0012",
+                                OWNERSHIPT: "PUB",
+                                ACCEPTANCE: "2003/08/11",
+                                MFGCODE: "ND",
+                                MFGDATE: "0000/00/00",
+                                ISOLATIONV: "Y",
+                                DISTTOVALV: 0.0,
+                                DISTTOBC: 3.0,
+                                TIEDOWNTYP: "BC",
+                                X_NAD83: 0.0,
+                                Y_NAD83: 0.0,
+                                MOVEDTOGPS: "N",
+                                GPS_PRECIS: null,
+                                ELEVATION: 0.0,
+                                RIGHTOFWAY: "Y",
+                                EASEMENT: "N",
+                                PRESSUREPL: "LOWER",
+                                HYDRANTSTY: "ST",
+                                SOURCE: "FS",
+                                COMMENT: null,
+                                SYSTEM: "ARLING",
+                            },
+                            geometry: {
+                                type: "Point",
+                                coordinates: [-97.1081, 32.7357], // Already in lat/lng
+                            },
+                        },
+                        {
+                            type: "Feature",
+                            properties: {
+                                UT_GISID: "J04FH0015",
+                                OWNERSHIPT: "PUB",
+                                ACCEPTANCE: "0000/00/00",
+                                MFGCODE: "MU",
+                                MFGDATE: "1985/01/01",
+                                ISOLATIONV: "Y",
+                                DISTTOVALV: 0.0,
+                                DISTTOBC: 6.0,
+                                TIEDOWNTYP: "BC",
+                                X_NAD83: 2410155.5839,
+                                Y_NAD83: 6971699.0704,
+                                MOVEDTOGPS: "Y",
+                                GPS_PRECIS: "M",
+                                ELEVATION: 0.0,
+                                RIGHTOFWAY: "Y",
+                                EASEMENT: null,
+                                PRESSUREPL: "LOWER",
+                                HYDRANTSTY: "ST",
+                                SOURCE: "FV",
+                                COMMENT: null,
+                                SYSTEM: "ARLING",
+                            },
+                            geometry: {
+                                type: "Point",
+                                coordinates: [-97.109, 32.7345], // Already in lat/lng
+                            },
+                        },
+                        {
+                            type: "Feature",
+                            properties: {
+                                UT_GISID: "G04FH0074",
+                                OWNERSHIPT: "PUB",
+                                ACCEPTANCE: "1979/07/23",
+                                MFGCODE: "WA",
+                                MFGDATE: "1979/01/01",
+                                ISOLATIONV: "N",
+                                DISTTOVALV: 0.0,
+                                DISTTOBC: 4.0,
+                                TIEDOWNTYP: "BC",
+                                X_NAD83: 2395384.295,
+                                Y_NAD83: 6970990.5023999996,
+                                MOVEDTOGPS: "Y",
+                                GPS_PRECIS: "M",
+                                ELEVATION: 0.0,
+                                RIGHTOFWAY: "N",
+                                EASEMENT: "Y",
+                                PRESSUREPL: "LOWER",
+                                HYDRANTSTY: "ST",
+                                SOURCE: "FV",
+                                COMMENT:
+                                    "apartment  by the  office out of service",
+                                SYSTEM: "ARLING",
+                            },
+                            geometry: {
+                                type: "Point",
+                                coordinates: [
+                                    -97.08017599066381, 32.72949523323712,
+                                ], //Make sure the coordinates are converted
+                            },
+                        },
+                        // Add other features here, making sure to convert coordinates if needed
+                    ],
+                };
+
+                // Convert coordinates (only for features that need it)
+                geojsonData.features.forEach((feature) => {
+                    if (feature.geometry.type === "Point") {
+                        let [x, y, z] = feature.geometry.coordinates;
+                        // Check if the coordinates array has more than 2 elements
+                        if (feature.geometry.coordinates.length > 2) {
+                            // If it does, remove the third element (z)
+                            feature.geometry.coordinates.splice(2, 1);
+                        }
+                        // Now proceed with the conversion as before
+                        [x, y] = feature.geometry.coordinates; // Re-assign x and y after potential removal of z
+                        if (x > 1000000) {
+                            feature.geometry.coordinates = proj4(
+                                "EPSG:2276",
+                                "EPSG:4326",
+                                [x, y]
+                            );
+                        }
+                    }
+                });
+
+                map.data.addGeoJson(geojsonData);
+
+                map.data.setStyle({
+                    fillColor: "blue",
+                    strokeColor: "black",
+                    strokeWeight: 1,
+                });
+            }
+
+            window.onload = initMap;
+        </script>
+    </body>
+</html>
