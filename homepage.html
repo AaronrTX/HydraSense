@@ -183,9 +183,8 @@
 
             <section class="metrics">
                 <div class="metric">
-                    <img src="pressure.png" alt="Pressure Icon" class="icon" />
                     <h2>Pressure</h2>
-                    <p id="pressureValue">--</p>
+                    <iframe src="http://localhost:3000/d-solo/de39yg3wzd8n4a/sample-dashboard?from=1731783845700&to=1731956645700&timezone=browser&refresh=30s&orgId=1&panelId=1&__feature.dashboardSceneSolo" width="450" height="200" frameborder="0"></iframe>
                     <button
                         class="info-button"
                         onclick="showMoreInfo('pressure')"
@@ -194,9 +193,8 @@
                     </button>
                 </div>
                 <div class="metric">
-                    <img src="flow.png" alt="Flow Icon" class="icon" />
                     <h2>Flow</h2>
-                    <p id="flowValue">--</p>
+                    <iframe src="http://localhost:3000/d-solo/ce3ol949l6z28a/sea-levels-dummy-data?from=1731935349411&to=1731956949412&timezone=browser&refresh=30s&orgId=1&panelId=1&__feature.dashboardSceneSolo" width="450" height="200" frameborder="0"></iframe>
                     <button class="info-button" onclick="showMoreInfo('flow')">
                         More Info
                     </button>
@@ -224,6 +222,15 @@
         </div>
 
         <script>
+            //Script for the data to keep refreshing
+            function refreshFrames() {
+                const iframes = document.querySelectorAll('iframe');
+                iframes.forEach((iframe) => {
+                    iframe.src = iframe.src; 
+                    });
+}
+
+setInterval(refreshFrames, 30000);
             // JavaScript for fetching and displaying data
             function fetchSensorData() {
                 return {
