@@ -1,9 +1,14 @@
-from flask import Flask, Response, jsonify
-from influxdb_client import InfluxDBClient
 import csv
-from io import StringIO
+from flask import Flask, Response, jsonify, send_file
+from influxdb_client import InfluxDBClient
 from flask_cors import CORS
-
+from io import BytesIO, StringIO
+from reportlab.lib.pagesizes import letter
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle
+from reportlab.lib import colors
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
+from reportlab.lib.pagesizes import letter
 app = Flask(__name__)
 CORS(app)
 
@@ -60,7 +65,7 @@ def get_alerts():
         result = query_api.query(org=INFLUXDB_ORG, query=query)
 
         alerts = []
-        TEMPERATURE_THRESHOLD = 0.5
+        TEMPERATURE_THRESHOLD = 1.5
 
         for table in result:
             for record in table.records:
@@ -74,6 +79,65 @@ def get_alerts():
 
     except Exception as e:
         return jsonify({"alerts": [f"Error fetching data: {str(e)}"]}), 500
+
+@app.route('/generate-report', methods=['GET'])
+def generate_report():
+    """
+    Generate a PDF report with data formatted as a table.
+    """
+    try:
+        # Fetch data from InfluxDB
+        client = InfluxDBClient(url=INFLUXDB_URL, token=INFLUXDB_TOKEN, org=INFLUXDB_ORG)
+        query_api = client.query_api()
+
+        query = f'''
+        from(bucket: "{INFLUXDB_BUCKET}")
+        |> range(start: -1h)
+        '''
+
+        data = query_api.query(org=INFLUXDB_ORG, query=query)
+
+        # Prepare data for the table
+        table_data = [["Time", "Value", "Field", "Measurement"]]  # Table header
+        for table in data:
+            for record in table.records:
+                table_data.append([
+                    record.get_time(),
+                    record.get_value(),
+                    record.get_field(),
+                    record.get_measurement()
+                ])
+
+        # Create a PDF buffer
+        pdf_buffer = BytesIO()
+        pdf = SimpleDocTemplate(pdf_buffer, pagesize=letter)
+
+        # Define the table and styles
+        table = Table(table_data)
+        table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.grey),  # Header background
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),  # Header text color
+            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+            ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
+            ('FONTSIZE', (0, 0), (-1, -1), 10),
+            ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+            ('BACKGROUND', (0, 1), (-1, -1), colors.beige),  # Table body background
+            ('GRID', (0, 0), (-1, -1), 1, colors.black)  # Grid lines
+        ]))
+
+        # Build the PDF
+        pdf.build([table])
+        pdf_buffer.seek(0)
+
+        return send_file(
+            pdf_buffer,
+            mimetype="application/pdf",
+            as_attachment=True,
+            download_name="hydrant_report.pdf"
+        )
+    except Exception as e:
+        return jsonify({"error": f"Failed to generate report: {str(e)}"}), 500
+
 
 if __name__ == '__main__':
     app.run(debug=True)

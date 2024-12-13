@@ -189,10 +189,11 @@
                     <a
                         id="download-data-button"
                         class="download-button"
-                        href="http://127.0.0.1:5000/download-data"
-                        download
-                        >Download Report</a
+                        href="#"
+                        onclick="downloadPDFReport()"
                     >
+                        Download Report as PDF
+                    </a>
                 </div>
             </div>
         </div>
@@ -251,13 +252,6 @@
                     day: "numeric",
                     year: "numeric",
                 })}.`;
-                const downloadButton =
-                    document.getElementById("download-button");
-                downloadButton.href = `reports/${hydrantId}-${date}.pdf`;
-                downloadButton.download = `Report_Hydrant_${hydrantId.replace(
-                    "hydrant",
-                    ""
-                )}_${date}.pdf`;
             }
 
             function goBack() {
@@ -271,6 +265,11 @@
                     "none";
                 document.getElementById("hydrant-selection").style.display =
                     "block";
+            }
+
+            function downloadPDFReport() {
+                const url = "http://127.0.0.1:5000/generate-report";
+                window.open(url, "_blank");
             }
         </script>
     </body>

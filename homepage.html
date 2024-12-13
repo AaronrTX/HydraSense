@@ -19,45 +19,28 @@
                 font-family: Arial, sans-serif;
                 background-color: #f7f9fc;
                 color: #333;
-                display: flex;
             }
 
-            header {
-                background-color: #d8dbe6;
-                padding: 20px;
-                text-align: center;
-                font-size: 24px;
-                font-weight: bold;
-                color: #444;
+            .container {
+                display: grid;
+                grid-template-columns: 1fr 3fr 1fr; /* Sidebar | Main Content | Alerts */
+                width: 100%;
+                height: 100%;
             }
 
             .sidebar {
-                width: 15%;
-                min-width: 150px;
                 background-color: #2e3b4e;
                 color: #fff;
                 display: flex;
                 flex-direction: column;
                 align-items: center;
-                padding-top: 20px;
-                transition: transform 0.3s ease;
-                padding-top: 4%;
-            }
-
-            /* Hamburger Button Style */
-            .hamburger {
-                display: none;
-            }
-
-            .sidebar h2 {
-                margin-bottom: 30px;
-                font-size: 20px;
+                padding: 20px;
+                gap: 15px;
             }
 
             .sidebar a {
                 color: #fff;
                 text-decoration: none;
-                margin: 15px 0;
                 font-size: 18px;
                 transition: color 0.3s;
             }
@@ -67,11 +50,10 @@
             }
 
             .main-content {
-                flex: 1;
-
                 display: flex;
                 flex-direction: column;
                 align-items: center;
+                padding: 20px;
             }
 
             header {
@@ -87,80 +69,47 @@
 
             .metrics {
                 display: flex;
-                justify-content: center;
-                gap: 50px;
-                margin-bottom: 20px;
-                width: 80%;
-                height: 55%;
-            }
-            .metric {
-                text-align: center;
-                flex: 1;
-                margin-top: 10%;
-                margin-bottom: 10%;
-                border: 2px solid #d1d1d1;
-                background-color: #ffffff;
-                height: 55%;
+                flex-direction: column;
+                gap: 20px;
+                width: 100%;
+                align-items: center;
             }
 
-            @media (min-width: 768px) {
-                .metric {
-                    flex: 1 1 45%;
-                }
+            .metric {
+                text-align: center;
+                border: 2px solid #d1d1d1;
+                background-color: #ffffff;
+                width: 80%;
+                padding: 20px;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
             }
-            */ .metric h2 {
+
+            .metric h2 {
                 font-size: 20px;
                 color: #2e3b4e;
             }
 
-            .icon {
-                width: 80px;
-                height: 80px;
+            iframe {
+                width: 100%;
+                height: 200px;
+                border: none;
             }
 
             .alerts {
-                margin-top: 30px;
-                width: 100%;
-                max-width: 500px;
                 background-color: #fff;
                 border: 2px solid #d9534f;
                 border-radius: 8px;
                 box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
                 padding: 15px;
-                overflow-y: auto; /* Enables vertical scrolling */
-                max-height: 300px;
+                overflow-y: auto;
+                margin: 20px;
+                height: calc(100% - 40px); /* Adjust to fit the container height */
             }
 
             .alerts h2 {
                 font-size: 20px;
                 margin-bottom: 10px;
                 color: #d9534f;
-            }
-
-            .alert {
-                padding: 8px;
-                margin: 5px 0;
-                border: 1px solid #ccc;
-                border-radius: 4px;
-                background-color: #f9f9f9;
-                color: #d9534f;
-            }
-
-            .info-button {
-                margin-top: 10px;
-                padding: 10px 20px;
-                font-size: 14px;
-                background-color: #007bff;
-                color: #fff;
-                border: none;
-                border-radius: 4px;
-                cursor: pointer;
-                text-decoration: none;
-                text-align: center;
-            }
-
-            .info-button:hover {
-                background-color: #0056b3;
             }
 
             .alert-card {
@@ -171,14 +120,8 @@
                 padding: 10px;
                 font-size: 16px;
                 color: #d9534f;
-                display: flex;
-                align-items: center;
-                gap: 10px;
             }
-            
-            .alert-card:last-child {
-                margin-bottom: 0; /* Removes margin for the last alert card */
-            }
+
             .alert-icon {
                 font-size: 24px;
             }
@@ -187,112 +130,72 @@
                 flex: 1;
                 word-wrap: break-word;
             }
-
-
-            @media (max-width: 800px) {
-                .metrics {
-                    flex-direction: column;
-                    align-items: center;
-                    margin-top: 70px;
-                    gap: 5px;
-                }
-                .metric {
-                    width: 90%;
-                    padding: 5%;
-                }
-            }
         </style>
     </head>
 
     <body>
-        <div class="sidebar" id="sidebar">
-            <a href="homepage.html">Homepage</a>
-            <a href="report.html">Report</a>
-            <a href="testing.html">Maps</a>
-        </div>
+        <div class="container">
+            <!-- Sidebar -->
+            <div class="sidebar">
+                <a href="homepage.html">Homepage</a>
+                <a href="report.html">Report</a>
+                <a href="testing.html">Maps</a>
+            </div>
 
-        <div class="main-content">
-            <header>
-                <h1>Homepage</h1>
-            </header>
+            <!-- Main Content -->
+            <div class="main-content">
+                <header>
+                    <h1>Homepage</h1>
+                </header>
 
-            <section class="metrics">
-                <div class="metric">
-                    <h2>Pressure</h2>
-                    <iframe src="http://localhost:3000/d-solo/ee5n9m5qxse80a/tempdata1?orgId=1&from=1733168616790&to=1733168916790&timezone=browser&refresh=5s&panelId=1&__feature.dashboardSceneSolo" width="450" height="200" frameborder="0"></iframe>
-                
-                </div>
-                <div class="metric">
-                    <h2>Flow</h2>
-                    <iframe src="http://localhost:3000/d-solo/ae5nr4bgwhds0e/new-dashboard?orgId=1&from=1733165348915&to=1733168948915&timezone=browser&refresh=5s&panelId=1&__feature.dashboardSceneSolo" width="450" height="200" frameborder="0"></iframe>
-                
-                </div>
-            </section>
+                <section class="metrics">
+                    <div class="metric">
+                        <h2>Pressure</h2>
+                        <iframe src="http://localhost:3000/d-solo/ee5n9m5qxse80a/tempdata1?orgId=1&from=1734107622781&to=1734107922781&timezone=browser&refresh=5s&panelId=1&__feature.dashboardSceneSolo"></iframe>
+                    </div>
+                    <div class="metric">
+                        <h2>Flow</h2>
+                        <iframe src="http://localhost:3000/d-solo/ae5nr4bgwhds0e/new-dashboard?orgId=1&from=1733165348915&to=1733168948915&timezone=browser&refresh=5s&panelId=1&__feature.dashboardSceneSolo"></iframe>
+                    </div>
+                </section>
+            </div>
 
+            <!-- Alerts Section -->
             <section class="alerts">
                 <h2>Alerts</h2>
                 <div id="alertList"></div>
             </section>
         </div>
+
         <script>
-            // Fetch alerts from the backend
+            // JavaScript logic for fetching and updating alerts
             async function fetchAlerts() {
                 try {
-                    // Fetch alerts from the backend
                     const response = await fetch("http://127.0.0.1:5000/get-alerts");
-                    if (!response.ok) {
-                        throw new Error(`Failed to fetch alerts: ${response.statusText}`);
-                    }
                     const data = await response.json();
-                    console.log("Alerts fetched:", data.alerts); // Debugging log
                     return data.alerts || [];
                 } catch (error) {
-                    console.error("Error fetching alerts:", error);
-                    return ["⚠️ Unable to fetch alerts. Please check the backend."]; // Fallback error message
+                    return ["⚠️ Unable to fetch alerts. Please check the backend."];
                 }
             }
-        
+
             function updateAlerts(alerts) {
                 const alertList = document.getElementById("alertList");
-                alertList.innerHTML = ""; // Clear existing alerts
+                alertList.innerHTML = "";
 
                 if (alerts.length === 0) {
-                    const noAlerts = document.createElement("div");
-                    noAlerts.className = "alert-card";
-                    noAlerts.innerHTML = `<span class="alert-icon">✅</span><span class="alert-text">All systems are normal.</span>`;
-                    alertList.appendChild(noAlerts);
+                    alertList.innerHTML = `<div class="alert-card"><span class="alert-icon">✅</span><span class="alert-text">All systems are normal.</span></div>`;
                 } else {
                     alerts.forEach((alert) => {
-                        const alertCard = document.createElement("div");
-                        alertCard.className = "alert-card";
-                        alertCard.innerHTML = `<span class="alert-icon">⚠️</span><span class="alert-text">${alert}</span>`;
-                        alertList.appendChild(alertCard);
+                        alertList.innerHTML += `<div class="alert-card"><span class="alert-icon">⚠️</span><span class="alert-text">${alert}</span></div>`;
                     });
                 }
             }
-        
-            // Periodically fetch alerts and update the UI
+
             setInterval(async () => {
                 const alerts = await fetchAlerts();
                 updateAlerts(alerts);
-            }, 5000); // Fetch alerts every 5 seconds
-        
-            // Refresh iframe panels every 30 seconds
-            function refreshFrames() {
-                const iframes = document.querySelectorAll("iframe");
-                iframes.forEach((iframe) => {
-                    iframe.src = iframe.src; // Reload the iframe
-                });
-            }
-        
-            setInterval(refreshFrames, 30000); // Refresh every 30 seconds
-        
-            function toggleSidebar() {
-                const sidebar = document.getElementById("sidebar");
-                sidebar.classList.toggle("show"); // Toggle sidebar visibility
-            }
+            }, 5000);
         </script>
-        
-        
     </body>
 </html>
