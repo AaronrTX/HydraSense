@@ -12,11 +12,40 @@ from reportlab.lib.pagesizes import letter
 app = Flask(__name__)
 CORS(app)
 
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+
+
 # InfluxDB connection details
 INFLUXDB_URL = "https://us-east-1-1.aws.cloud2.influxdata.com"
 INFLUXDB_TOKEN = "u4qevo7QbZxbknS9-lpGklPOxMPg5pH7PPzRqFT7VxdPzCnLxqW0Y_h4k7oTyIiOr0cbMJ9GlcH_5JOK7O4z8Q=="
 INFLUXDB_ORG = "Dev team"
 INFLUXDB_BUCKET = "demo_bucket"
+
+# Email alert configuration
+def send_email(subject, body):
+    sender_email = "hydrasense2025@gmail.com"  
+    sender_password = "yhja otlm qryv fczo"    
+    recipient_email = "hydrasense2025@gmail.com"  
+
+    msg = MIMEMultipart()
+    msg["From"] = sender_email
+    msg["To"] = recipient_email
+    msg["Subject"] = subject
+    msg.attach(MIMEText(body, "plain"))
+
+    try:
+        server = smtplib.SMTP("smtp.gmail.com", 587)
+        server.starttls()
+        server.login(sender_email, sender_password)
+        server.sendmail(sender_email, recipient_email, msg.as_string())
+        server.quit()
+        print("Alert email sent successfully!")
+    except Exception as e:
+        print("Error sending email:", e)
+
+
 
 @app.route('/download-data', methods=['GET'])
 def download_data():
@@ -70,10 +99,16 @@ def get_alerts():
         for table in result:
             for record in table.records:
                 if record["_field"] == "temperature" and record["_value"] < TEMPERATURE_THRESHOLD:
-                    alerts.append(f"Temperature is below threshold: {record['_value']}")
+                    #alerts.append(f"Temperature is below threshold: {record['_value']}")
+                    alert_msg = f"Temperature is below threshold: {record['_value']}"
+                    alerts.append(alert_msg)
+                    # Send alert email
+                    send_email("Temperature Alert", alert_msg)
 
         if not alerts:
             alerts.append("✅ All systems are normal.")
+            send_email("Temperature Alert", "Let's see if this work or not.")
+
 
         return jsonify({"alerts": alerts})
 
