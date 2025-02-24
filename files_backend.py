@@ -15,6 +15,8 @@ CORS(app)
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+import threading
+import time
 
 
 # InfluxDB connection details
@@ -45,13 +47,27 @@ def send_email(subject, body):
     except Exception as e:
         print("Error sending email:", e)
 
+# To keep track of sent alerts (in-memory)
+sent_alerts = set()
+
+# Function to reset sent_alerts every 24 hours
+def reset_sent_alerts():
+    while True:
+        time.sleep(86400)  # 86400 seconds = 24 hours
+        sent_alerts.clear()
+        print("✅ Sent alerts have been reset.")
+
+# Start the reset function in a background thread
+reset_thread = threading.Thread(target=reset_sent_alerts, daemon=True)
+reset_thread.start()
+
 
 
 @app.route('/download-data', methods=['GET'])
 def download_data():
     client = InfluxDBClient(url=INFLUXDB_URL, token=INFLUXDB_TOKEN, org=INFLUXDB_ORG)
     query_api = client.query_api()
-
+    
     query = f'''
     from(bucket: "{INFLUXDB_BUCKET}")
     |> range(start: -1h)
@@ -98,16 +114,21 @@ def get_alerts():
 
         for table in result:
             for record in table.records:
+                alert_id = f"{record.get_time()}-{record.get_value()}"
                 if record["_field"] == "temperature" and record["_value"] < TEMPERATURE_THRESHOLD:
                     #alerts.append(f"Temperature is below threshold: {record['_value']}")
                     alert_msg = f"Temperature is below threshold: {record['_value']}"
                     alerts.append(alert_msg)
                     # Send alert email
-                    send_email("Temperature Alert", alert_msg)
+                    #send_email("Temperature Alert", alert_msg)
+                    if alert_id not in sent_alerts:
+                        send_email("Temperature Alert", alert_msg)
+                        sent_alerts.add(alert_id)  # Mark alert as sent
+
 
         if not alerts:
             alerts.append("✅ All systems are normal.")
-            send_email("Temperature Alert", "Let's see if this work or not.")
+            #send_email("Temperature Alert", "Let's see if this work or not.")
 
 
         return jsonify({"alerts": alerts})
