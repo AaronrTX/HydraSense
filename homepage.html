@@ -168,6 +168,17 @@
         </div>
 
         <script>
+
+            //Script for the data to keep refreshing
+            function refreshFrames() {
+                const iframes = document.querySelectorAll('iframe');
+                iframes.forEach((iframe) => {
+                    iframe.src = iframe.src; 
+                    });
+                    }
+
+                    setInterval(refreshFrames, 30000);
+
             // JavaScript logic for fetching and updating alerts
             async function fetchAlerts() {
                 try {
