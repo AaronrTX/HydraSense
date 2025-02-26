@@ -151,7 +151,7 @@
                 <section class="metrics">
                     <div class="metric">
                         <h2>Pressure</h2>
-                        <iframe src="http://localhost:3000/d-solo/ee5n9m5qxse80a/tempdata1?orgId=1&from=1734107622781&to=1734107922781&timezone=browser&refresh=5s&panelId=1&__feature.dashboardSceneSolo"></iframe>
+                        <iframe src="http://localhost:3000/d-solo/aee272f3ajpxcf/demo-2?orgId=1&from=1740584379792&to=1740585279792&timezone=browser&refresh=5s&panelId=1&__feature.dashboardSceneSolo"></iframe>
                     </div>
                     <div class="metric">
                         <h2>Flow</h2>
@@ -168,6 +168,15 @@
         </div>
 
         <script>
+            //Script for the data to keep refreshing
+            function refreshFrames() {
+                const iframes = document.querySelectorAll('iframe');
+                iframes.forEach((iframe) => {
+                    iframe.src = iframe.src; 
+                    });
+                    }
+
+                    setInterval(refreshFrames, 30000);
             // JavaScript logic for fetching and updating alerts
             async function fetchAlerts() {
                 try {
