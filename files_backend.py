@@ -67,7 +67,7 @@ sent_alerts = set()
 # Function to reset sent_alerts every 24 hours
 def reset_sent_alerts():
     while True:
-        time.sleep(900)  # 86400 seconds = 24 hours | 120 seconds = 2 minutes
+        time.sleep(900)  # 86400 seconds = 24 hours | 120 seconds = 2 minutes | 900 = 15 minutes
         sent_alerts.clear()
         print("* Sent alerts have been reset.") #the check mark gave some problem
 
