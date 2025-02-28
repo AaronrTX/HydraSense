@@ -13,6 +13,7 @@ from reportlab.lib import colors
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.lib.pagesizes import letter
+from influxdb_client import Point
 app = Flask(__name__)
 CORS(app)
 
@@ -28,7 +29,8 @@ sent_alerts = set()
 INFLUXDB_URL = "https://us-east-1-1.aws.cloud2.influxdata.com"
 INFLUXDB_TOKEN = "u4qevo7QbZxbknS9-lpGklPOxMPg5pH7PPzRqFT7VxdPzCnLxqW0Y_h4k7oTyIiOr0cbMJ9GlcH_5JOK7O4z8Q=="
 INFLUXDB_ORG = "Dev team"
-INFLUXDB_BUCKET = "demo_2"
+INFLUXDB_BUCKET = "demo_2" #pressure
+INFLUXDB_BUCKET2 = "alerts_filter2" #filters pressure
 
 # Email alert configuration
 def send_email(subject, body, alert_key):
@@ -106,7 +108,7 @@ def download_data():
         headers={"Content-Disposition": "attachment;filename=sensor_data.csv"}
     )
 
-@app.route('/get-alerts', methods=['GET'])
+"""@app.route('/get-alerts', methods=['GET']) 
 def get_alerts():
     try:
 
@@ -151,6 +153,46 @@ def get_alerts():
 
     except Exception as e:
         return jsonify({"alerts": [f"Error fetching data: {str(e)}"]}), 500
+"""
+
+#Function to filter data and put into another bucket
+def filter_and_store(THRESH = 30):
+    try:
+        client = InfluxDBClient(url=INFLUXDB_URL, token=INFLUXDB_TOKEN, org=INFLUXDB_ORG)
+        query_api = client.query_api()
+        write_api = client.write_api()
+
+        query = f'''
+        from(bucket: "{INFLUXDB_BUCKET}")
+        |> range(start: -1h)
+        |> filter(fn: (r) => r["_measurement"] == "Pilot2")
+        |> filter(fn: (r) => r["_field"] == "pressure")
+        |> last()
+        '''
+
+        result = query_api.query(org=INFLUXDB_ORG, query=query)
+
+        for table in result:
+            for record in table.records:
+                pressure_val = record.get_value()
+                timestamp = record.get_time()
+
+                if pressure_val < THRESH:
+                    print(f"Pressure below threshold : {pressure_val}. Storing in {INFLUXDB_BUCKET2}")
+
+                    point = (
+                        Point("Pilot2")
+                        .field("pressure", pressure_val)
+                        .time(timestamp)
+                    )
+
+                    write_api.write(bucket=INFLUXDB_BUCKET2, org=INFLUXDB_ORG, record=point)
+        print("Filtering Complete")
+
+    except Exception as e:
+        print(f"Error Filtering : {str(e)}")
+
+
 
 @app.route('/generate-report', methods=['GET'])
 def generate_report():
