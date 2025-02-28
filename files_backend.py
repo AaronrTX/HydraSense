@@ -25,14 +25,17 @@ import time
 import logging
 
 PRESSURE_THRESH = 10
+FLOW_THRESH = 5
 
 sent_alerts = set()
 # InfluxDB connection details
 INFLUXDB_URL = "https://us-east-1-1.aws.cloud2.influxdata.com"
 INFLUXDB_TOKEN = "u4qevo7QbZxbknS9-lpGklPOxMPg5pH7PPzRqFT7VxdPzCnLxqW0Y_h4k7oTyIiOr0cbMJ9GlcH_5JOK7O4z8Q=="
 INFLUXDB_ORG = "Dev team"
-INFLUXDB_BUCKET = "demo_2" #pressure
-INFLUXDB_BUCKET2 = "alerts_filter2" #filters pressure
+PRESSURE_BUCKET = "demo_2" #pressure
+FLOW_BUCKET = "demo_bucket" #flow 
+PRESSURE_ALERTS_BUCKET = "alerts_filter2" #filters pressure
+FLOW_ALERTS_BUCKET = "alerts_filter1" #filters flow
 
 # Email alert configuration
 def send_email(subject, body, alert_key):
@@ -87,7 +90,7 @@ def download_data():
     query_api = client.query_api()
     
     query = f'''
-    from(bucket: "{INFLUXDB_BUCKET}")
+    from(bucket: "{PRESSURE_BUCKET}")
     |> range(start: -1h)
     '''
 
@@ -118,7 +121,7 @@ def get_alerts():
         query_api = client.query_api()
 
         query = f'''
-        from(bucket: "{INFLUXDB_BUCKET}")
+        from(bucket: "{PRESSURE_BUCKET}")
         |> range(start: -1h)
         |> filter(fn: (r) => r["_measurement"] == "Pilot2")
         |> filter(fn: (r) => r["_field"] == "pressure")
@@ -156,7 +159,7 @@ def get_alerts():
     except Exception as e:
         return jsonify({"alerts": [f"Error fetching data: {str(e)}"]}), 500
 """
-
+""""
 #Function to filter data and put into another bucket
 def filter_and_store(PRESSURE_THRESH):
     try:
@@ -165,7 +168,7 @@ def filter_and_store(PRESSURE_THRESH):
         write_api = client.write_api()
 
         query = f'''
-        from(bucket: "{INFLUXDB_BUCKET}")
+        from(bucket: "{PRESSURE_BUCKET}")
         |> range(start: -1h)
         |> filter(fn: (r) => r["_measurement"] == "Pilot2")
         |> filter(fn: (r) => r["_field"] == "pressure")
@@ -179,7 +182,7 @@ def filter_and_store(PRESSURE_THRESH):
                 timestamp = record.get_time()
 
                 if pressure_val < PRESSURE_THRESH:
-                    print(f"Pressure below threshold : {pressure_val}. Storing in {INFLUXDB_BUCKET2}")
+                    print(f"Pressure below threshold : {pressure_val}. Storing in {PRESSURE_ALERTS_BUCKET}")
 
                     point = (
                         Point("Pilot2")
@@ -187,7 +190,7 @@ def filter_and_store(PRESSURE_THRESH):
                         .time(timestamp)
                     )
 
-                    write_api.write(bucket=INFLUXDB_BUCKET2, org=INFLUXDB_ORG, record=point)
+                    write_api.write(bucket=PRESSURE_ALERTS_BUCKET, org=INFLUXDB_ORG, record=point)
         print("Filtering Complete")
 
     except Exception as e:
@@ -207,7 +210,7 @@ def run_filter():
 
     filter_and_store()
     return jsonify({"message": "Filtering process triggered"})
-
+"""
 @app.route('/generate-report', methods=['GET'])
 def generate_report():
     """
@@ -219,7 +222,7 @@ def generate_report():
         query_api = client.query_api()
 
         query = f'''
-        from(bucket: "{INFLUXDB_BUCKET}")
+        from(bucket: "{PRESSURE_BUCKET}")
         |> range(start: -1h)
         '''
 
