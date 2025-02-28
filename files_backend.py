@@ -24,6 +24,8 @@ import threading
 import time
 import logging
 
+PRESSURE_THRESH = 10
+
 sent_alerts = set()
 # InfluxDB connection details
 INFLUXDB_URL = "https://us-east-1-1.aws.cloud2.influxdata.com"
@@ -156,7 +158,7 @@ def get_alerts():
 """
 
 #Function to filter data and put into another bucket
-def filter_and_store(THRESH = 30):
+def filter_and_store(PRESSURE_THRESH):
     try:
         client = InfluxDBClient(url=INFLUXDB_URL, token=INFLUXDB_TOKEN, org=INFLUXDB_ORG)
         query_api = client.query_api()
@@ -167,7 +169,6 @@ def filter_and_store(THRESH = 30):
         |> range(start: -1h)
         |> filter(fn: (r) => r["_measurement"] == "Pilot2")
         |> filter(fn: (r) => r["_field"] == "pressure")
-        |> last()
         '''
 
         result = query_api.query(org=INFLUXDB_ORG, query=query)
@@ -177,7 +178,7 @@ def filter_and_store(THRESH = 30):
                 pressure_val = record.get_value()
                 timestamp = record.get_time()
 
-                if pressure_val < THRESH:
+                if pressure_val < PRESSURE_THRESH:
                     print(f"Pressure below threshold : {pressure_val}. Storing in {INFLUXDB_BUCKET2}")
 
                     point = (
@@ -192,7 +193,20 @@ def filter_and_store(THRESH = 30):
     except Exception as e:
         print(f"Error Filtering : {str(e)}")
 
+def run_peirodic(interval=60, threshold=PRESSURE_THRESH):
+    while True:
+        print("Running filtering")
+        filter_and_store(threshold)
+        time.sleep(interval)
 
+filter_thread = threading.Thread(target=run_peirodic, args=(60,PRESSURE_THRESH), daemon=True) 
+filter_thread.start()
+
+@app.route('/run-filter', methods=['GET'])
+def run_filter():
+
+    filter_and_store()
+    return jsonify({"message": "Filtering process triggered"})
 
 @app.route('/generate-report', methods=['GET'])
 def generate_report():
