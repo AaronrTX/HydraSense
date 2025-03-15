@@ -75,6 +75,16 @@
                 border: 1px solid #ccc;
             }
 
+            .report-detail {
+                display:none;
+            }
+
+            .download-container {
+                display: flex;
+                flex-direction: column;
+                gap: 10px; /* Adds spacing between buttons */
+            }
+
             .back-button,
             .download-button,
             .hydrant-back-button {
@@ -93,6 +103,11 @@
             .download-button:hover,
             .hydrant-back-button:hover {
                 background-color: #0056b3;
+            }
+
+            .data-selection {
+                display: none; /* Initially hidden until hydrant is selected */
+                margin-top: 10px;
             }
 
             @media (min-width: 768px) {
@@ -115,31 +130,28 @@
                 <h2>Fire Hydrant Reports</h2>
 
                 <div class="report-list" id="hydrant-selection">
-                    <div
-                        class="report-item"
-                        onclick="selectHydrant('hydrant1')"
-                    >
+                    <div class="report-item" onclick="selectHydrant('hydrant1')">
                         <span>Hydrant #1</span>
-                        <img
-                            src="firehydrant.jpg"
-                            alt="Status Icon"
-                            class="status-icon"
-                        />
+                        <img src="firehydrant.jpg" alt="Status Icon" class="status-icon" />
+                    </div>
+                    <div class="report-item" onclick="selectHydrant('hydrant2')">
+                        <span>Hydrant #2</span>
+                        <img src="firehydrant.jpg" alt="Status Icon" class="status-icon" />
+                    </div>
+                    <div class="report-item" onclick="selectHydrant('hydrant3')">
+                        <span>Hydrant #3</span>
+                        <img src="firehydrant.jpg" alt="Status Icon" class="status-icon" />
+                    </div>
+                    <div class="report-item" onclick="selectHydrant('hydrant4')">
+                        <span>Hydrant #4</span>
+                        <img src="firehydrant.jpg" alt="Status Icon" class="status-icon" />
                     </div>
                 </div>
 
                 <div id="date-selection" class="date-selection">
                     <h3>Select Report Date</h3>
-                    <input
-                        id="date-picker"
-                        type="text"
-                        placeholder="Choose a date"
-                        readonly
-                    />
-                    <button
-                        class="hydrant-back-button"
-                        onclick="goToHydrantSelection()"
-                    >
+                    <input id="date-picker" type="text" placeholder="Choose a date" readonly />
+                    <button class="hydrant-back-button" onclick="goToHydrantSelection()">
                         Back to Hydrant Selection
                     </button>
                 </div>
@@ -147,18 +159,20 @@
                 <div id="report-detail" class="report-detail">
                     <h3 id="report-title"></h3>
                     <p id="report-content">
-                        The data for the selected hydrant and date will be
-                        displayed here.
+                        The data for the selected hydrant and date will be displayed here.
                     </p>
-                    <button class="back-button" onclick="goBack()">
-                        Return to Date Selection
-                    </button>
-                    <a
-                        id="download-data-button"
-                        class="download-button"
-                        href="#"
-                        onclick="downloadPDFReport()"
-                    >
+
+                    <div class="data-selection" id="data-selection">
+                        <label for="data-type"><strong>Select Data Type:</strong></label>
+                        <select id="data-type">
+                            <option value="pressure">Pressure</option>
+                            <option value="flow">Flow</option>
+                        </select>
+                    </div>
+
+                    <button class="back-button" onclick="goBack()">Return to Date Selection</button>
+                    
+                    <a id="download-data-button" class="download-button" href="#" onclick="downloadPDFReport()">
                         Download Report as PDF
                     </a>
                 </div>
@@ -186,22 +200,18 @@
             }
 
             function selectHydrant(hydrantId) {
-                document.getElementById("date-selection").style.display =
-                    "block";
-                document.getElementById("hydrant-selection").style.display =
-                    "none";
+                document.getElementById("date-selection").style.display = "block";
+                document.getElementById("hydrant-selection").style.display = "none";
                 document.getElementById("report-detail").style.display = "none";
                 initializeDatePicker(hydrantId);
             }
 
             function showReportDetail(hydrantId, date) {
-                document.getElementById("date-selection").style.display =
-                    "none";
-                document.getElementById("report-detail").style.display =
-                    "block";
-                document.getElementById(
-                    "report-title"
-                ).innerText = `Report for Hydrant #${hydrantId.replace(
+                document.getElementById("date-selection").style.display = "none";
+                document.getElementById("report-detail").style.display = "block";
+                document.getElementById("data-selection").style.display = "block"; // Show dropdown after selecting date
+
+                document.getElementById("report-title").innerText = `Report for Hydrant #${hydrantId.replace(
                     "hydrant",
                     ""
                 )} on ${new Date(date).toLocaleDateString("en-US", {
@@ -209,9 +219,8 @@
                     day: "numeric",
                     year: "numeric",
                 })}`;
-                document.getElementById(
-                    "report-content"
-                ).innerText = `Here is the detailed report for Hydrant #${hydrantId.replace(
+
+                document.getElementById("report-content").innerText = `Here is the detailed report for Hydrant #${hydrantId.replace(
                     "hydrant",
                     ""
                 )} on ${new Date(date).toLocaleDateString("en-US", {
@@ -223,19 +232,24 @@
 
             function goBack() {
                 document.getElementById("report-detail").style.display = "none";
-                document.getElementById("date-selection").style.display =
-                    "block";
+                document.getElementById("date-selection").style.display = "block";
             }
 
             function goToHydrantSelection() {
-                document.getElementById("date-selection").style.display =
-                    "none";
-                document.getElementById("hydrant-selection").style.display =
-                    "block";
+                document.getElementById("date-selection").style.display = "none";
+                document.getElementById("hydrant-selection").style.display = "block";
             }
 
             function downloadPDFReport() {
-                const url = "http://127.0.0.1:5000/generate-report";
+                const selectedDate = document.getElementById("date-picker").value;
+                const dataType = document.getElementById("data-type").value;
+
+                if (!selectedDate) {
+                    alert("Please select a date before downloading.");
+                    return;
+                }
+
+                const url = `http://127.0.0.1:5000/generate-report?hydrant=${selectedHydrantId}&date=${selectedDate}&type=${dataType}`;
                 window.open(url, "_blank");
             }
         </script>

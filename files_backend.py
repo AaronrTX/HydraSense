@@ -1,6 +1,6 @@
 import csv
 #pip install flask
-from flask import Flask, Response, jsonify, send_file
+from flask import Flask, Response, jsonify, send_file, request
 #pip3 install influxdb-client
 from influxdb_client import InfluxDBClient
 #pip install Flask-Cors
@@ -217,19 +217,38 @@ def generate_report():
     Generate a PDF report with data formatted as a table.
     """
     try:
+
+        hydrant_id = request.args.get('hydrant')
+        data_type = request.args.get('type', 'pressure')
+
+        if data_type == "flow":
+            bucket = FLOW_BUCKET  # demo_bucket
+            measurement = "Pilot"
+        else:
+            bucket = PRESSURE_BUCKET  # demo_2
+            measurement = "Pilot2"
+        
+        print(f"Generating report for: {hydrant_id}, Data Type: {data_type}, Bucket: {bucket}, Measurement: {measurement}")
+
+
         # Fetch data from InfluxDB
         client = InfluxDBClient(url=INFLUXDB_URL, token=INFLUXDB_TOKEN, org=INFLUXDB_ORG)
         query_api = client.query_api()
 
         query = f'''
-        from(bucket: "{PRESSURE_BUCKET}")
+        from(bucket: "{bucket}")
         |> range(start: -1h)
+        |> filter(fn: (r) => r["_measurement"] == "{measurement}")
         '''
+
+        print("Executing Query:", query)  # Debugging
 
         data = query_api.query(org=INFLUXDB_ORG, query=query)
 
         # Prepare data for the table
         table_data = [["Time", "Value", "Field", "Measurement"]]  # Table header
+        record_count = 0
+
         for table in data:
             for record in table.records:
                 table_data.append([
@@ -238,6 +257,12 @@ def generate_report():
                     record.get_field(),
                     record.get_measurement()
                 ])
+                record_count +=1
+        
+        print(f"Records retrieved: {record_count}")
+
+        if record_count == 0:
+            return jsonify({"error": "No data found for the selected parameters"}), 404
 
         # Create a PDF buffer
         pdf_buffer = BytesIO()
@@ -264,9 +289,10 @@ def generate_report():
             pdf_buffer,
             mimetype="application/pdf",
             as_attachment=True,
-            download_name="hydrant_report.pdf"
+            download_name=f"hydrant_{hydrant_id}_{data_type}_report.pdf"
         )
     except Exception as e:
+        print("Error Generating Report:", str(e))  # Debugging
         return jsonify({"error": f"Failed to generate report: {str(e)}"}), 500
 
 
