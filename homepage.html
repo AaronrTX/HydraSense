@@ -254,7 +254,7 @@
 
                     if (data.value !== undefined) {
                         const status = data.status.toUpperCase();
-                        statusText.innerText = `Status: ${status}`;
+                        statusText.innerText = `${status}`;
                         statusToggle.checked = data.value === 1; // Open = ON
                     } else {
                         statusText.innerText = "Status: Unknown";

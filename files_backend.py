@@ -14,6 +14,7 @@ from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.lib.pagesizes import letter
 from influxdb_client import Point
+from datetime import datetime
 app = Flask(__name__)
 CORS(app)
 
@@ -215,10 +216,9 @@ def run_filter():
 @app.route('/generate-report', methods=['GET'])
 def generate_report():
     """
-    Generate a PDF report with data formatted as a table.
+    Generate a PDF report with database timestamps directly matching values.
     """
     try:
-
         hydrant_id = request.args.get('hydrant')
         data_type = request.args.get('type', 'pressure')
 
@@ -228,9 +228,8 @@ def generate_report():
         else:
             bucket = PRESSURE_BUCKET  # demo_2
             measurement = "Pilot2"
-        
-        print(f"Generating report for: {hydrant_id}, Data Type: {data_type}, Bucket: {bucket}, Measurement: {measurement}")
 
+        print(f"Generating report for: {hydrant_id}, Data Type: {data_type}, Bucket: {bucket}")
 
         # Fetch data from InfluxDB
         client = InfluxDBClient(url=INFLUXDB_URL, token=INFLUXDB_TOKEN, org=INFLUXDB_ORG)
@@ -246,20 +245,29 @@ def generate_report():
 
         data = query_api.query(org=INFLUXDB_ORG, query=query)
 
-        # Prepare data for the table
-        table_data = [["Time", "Value", "Field", "Measurement"]]  # Table header
+        # Prepare table headers
+        table_data = [["Date & Time", "Value", "Field"]]  # No "Measurement"
         record_count = 0
 
         for table in data:
             for record in table.records:
+                # Directly use the timestamp from the database
+                timestamp = record.get_time()  # Already in correct ISO format
+
+                # Convert timestamp to "YYYY-MM-DD HH:MM" format
+                formatted_time = timestamp.strftime("%Y-%m-%d %H:%M")
+
+                # Use the value directly from the database and round to 2 decimal places
+                formatted_value = round(float(record.get_value()), 2)
+
+                # Append data to the table
                 table_data.append([
-                    record.get_time(),
-                    record.get_value(),
-                    record.get_field(),
-                    record.get_measurement()
+                    formatted_time,  # Directly using the DB timestamp
+                    formatted_value,
+                    record.get_field()
                 ])
-                record_count +=1
-        
+                record_count += 1
+
         print(f"Records retrieved: {record_count}")
 
         if record_count == 0:
@@ -278,7 +286,7 @@ def generate_report():
             ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
             ('FONTSIZE', (0, 0), (-1, -1), 10),
             ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
-            ('BACKGROUND', (0, 1), (-1, -1), colors.beige),  # Table body background
+            ('BACKGROUND', (0, 1), (-1, -1), colors.lightgrey),  # Light grey table background
             ('GRID', (0, 0), (-1, -1), 1, colors.black)  # Grid lines
         ]))
 
@@ -295,7 +303,7 @@ def generate_report():
     except Exception as e:
         print("Error Generating Report:", str(e))  # Debugging
         return jsonify({"error": f"Failed to generate report: {str(e)}"}), 500
-
+    
 
 @app.route('/valve-status', methods=['GET'])
 def get_valve_status():
