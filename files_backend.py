@@ -36,6 +36,7 @@ PRESSURE_BUCKET = "demo_2" #pressure
 FLOW_BUCKET = "demo_bucket" #flow 
 PRESSURE_ALERTS_BUCKET = "alerts_filter2" #filters pressure
 FLOW_ALERTS_BUCKET = "alerts_filter1" #filters flow
+VALVE_BUCKET = "reed_switch" #reads valve status
 
 # Email alert configuration
 def send_email(subject, body, alert_key):
@@ -294,6 +295,65 @@ def generate_report():
     except Exception as e:
         print("Error Generating Report:", str(e))  # Debugging
         return jsonify({"error": f"Failed to generate report: {str(e)}"}), 500
+
+
+@app.route('/valve-status', methods=['GET'])
+def get_valve_status():
+    try:
+        client = InfluxDBClient(url=INFLUXDB_URL, token=INFLUXDB_TOKEN, org=INFLUXDB_ORG)
+        query_api = client.query_api()
+
+        query = f'''
+        from(bucket: "reed_switch")
+        |> range(start: -1h)
+        |> filter(fn: (r) => r["_measurement"] == "Status")
+        |> filter(fn: (r) => r["_field"] == "value")
+        |> last()
+        '''
+
+        result = query_api.query(org=INFLUXDB_ORG, query=query)
+
+        if not result:
+            return jsonify({"error": "No data found in reed_switch bucket"}), 404
+
+        for table in result:
+            for record in table.records:
+                raw_value = record.get_value()  # Get the raw value from InfluxDB
+
+                try:
+                    value = int(raw_value)  # Convert to integer
+                    if value not in [0, 1]:  
+                        raise ValueError("Invalid value received from InfluxDB")
+                except ValueError:
+                    return jsonify({"error": f"Invalid valve status value: {raw_value}"}), 400
+
+                # 🔄 Determine valve status
+                valve_status = "CLOSED" if value == 0 else "OPEN"
+
+                # ✅ Return JSON response
+                return jsonify({"value": value, "status": valve_status})
+
+        return jsonify({"error": "No data found"}), 404
+
+    except Exception as e:
+        return jsonify({"error": f"Error retrieving valve status: {str(e)}"}), 500
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 if __name__ == '__main__':
