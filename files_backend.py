@@ -15,6 +15,7 @@ from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.lib.pagesizes import letter
 from influxdb_client import Point
 from datetime import datetime
+import pytz #this will put the timestamp into CT (pip install pytz)
 app = Flask(__name__)
 CORS(app)
 
@@ -38,6 +39,11 @@ FLOW_BUCKET = "demo_bucket" #flow
 PRESSURE_ALERTS_BUCKET = "alerts_filter2" #filters pressure
 FLOW_ALERTS_BUCKET = "alerts_filter1" #filters flow
 VALVE_BUCKET = "reed_switch" #reads valve status
+
+#time zone declaration
+utc = pytz.utc
+central = pytz.timezone('America/Chicago')
+
 
 # Email alert configuration
 def send_email(subject, body, alert_key):
@@ -251,18 +257,27 @@ def generate_report():
 
         for table in data:
             for record in table.records:
-                # Directly use the timestamp from the database
-                timestamp = record.get_time()  # Already in correct ISO format
 
-                # Convert timestamp to "YYYY-MM-DD HH:MM" format
-                formatted_time = timestamp.strftime("%Y-%m-%d %H:%M")
+                timestamp = record.get_time()
+
+                # Ensure timestamp is a datetime object before formatting
+                if isinstance(timestamp, str):  # Convert string to datetime if needed
+                    timestamp = datetime.strptime(timestamp, "%Y-%m-%dT%H:%M:%SZ")
+                    timestamp = utc.localize(timestamp)
+                # Format time in 12-hour format
+                formatted_time = timestamp.strftime("%Y-%m-%d %I:%M:%S %p")  
+                
+                central_time = timestamp.astimezone(central)
+
+                # Format time in 12-hour format
+                formatted_time = central_time.strftime("%Y-%m-%d %I:%M:%S %p")
 
                 # Use the value directly from the database and round to 2 decimal places
                 formatted_value = round(float(record.get_value()), 2)
 
                 # Append data to the table
                 table_data.append([
-                    formatted_time,  # Directly using the DB timestamp
+                    formatted_time,
                     formatted_value,
                     record.get_field()
                 ])
