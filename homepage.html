@@ -95,6 +95,70 @@
                 border: none;
             }
 
+             /* Valve Status Card (Placed Below Data Panels) */
+             .status-card {
+                background-color: #fff;
+                border: 2px solid #2e3b4e;
+                border-radius: 8px;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+                padding: 15px;
+                margin: 20px auto;
+                width: 80%;
+                text-align: center;
+            }
+
+            .status-card h2 {
+                font-size: 20px;
+                margin-bottom: 10px;
+                color: #2e3b4e;
+            }
+
+            .toggle-switch {
+                position: relative;
+                width: 50px;
+                height: 25px;
+                display: inline-block;
+                margin-left: 10px;
+            }
+
+            .toggle-switch input {
+                opacity: 0;
+                width: 0;
+                height: 0;
+            }
+
+            .slider {
+                position: absolute;
+                cursor: pointer;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background-color: #ccc;
+                border-radius: 25px;
+                transition: 0.4s;
+            }
+
+            .slider:before {
+                position: absolute;
+                content: "";
+                height: 18px;
+                width: 18px;
+                left: 4px;
+                bottom: 3.5px;
+                background-color: white;
+                border-radius: 50%;
+                transition: 0.4s;
+            }
+
+            input:checked + .slider {
+                background-color: green;
+            }
+
+            input:checked + .slider:before {
+                transform: translateX(24px);
+            }
+
             .alerts {
                 background-color: #fff;
                 border: 2px solid #d9534f;
@@ -151,16 +215,26 @@
                 <section class="metrics">
                     <div class="metric">
                         <h2>Pressure</h2>
-                        <iframe src="http://localhost:3000/d-solo/aee272f3ajpxcf/demo-2?orgId=1&from=1740595464137&to=1740596364137&timezone=browser&refresh=5s&panelId=1&__feature.dashboardSceneSolo"></iframe>
+                        <iframe src="http://localhost:3000/d-solo/bee1te12hfny8b/pressure-bucket?orgId=1&from=1742438657766&to=1742439557766&timezone=browser&refresh=auto&panelId=1&__feature.dashboardSceneSolo"></iframe>
                     </div>
                     <div class="metric">
                         <h2>Flow</h2>
-                        <iframe src="http://localhost:3000/d-solo/ae5nr4bgwhds0e/new-dashboard?orgId=1&from=1733165348915&to=1733168948915&timezone=browser&refresh=5s&panelId=1&__feature.dashboardSceneSolo"></iframe>
+                        <iframe src="http://localhost:3000/d-solo/aee272f3ajpxcf/temperature-bucket?orgId=1&from=1742438619617&to=1742439519618&timezone=browser&refresh=auto&panelId=1&__feature.dashboardSceneSolo"></iframe>
                     </div>
                 </section>
+
+                <!-- 🔹 Valve Status Card (Below Data Panels, Before Alerts) -->
+                <div class="status-card">
+                    <h2>Valve Status</h2>
+                    <span class="status-text" id="statusText">Loading...</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="statusToggle" disabled />
+                        <span class="slider"></span>
+                    </label>
+                </div>
             </div>
 
-            <!-- Alerts Section -->
+            <!-- Alerts Section (Remains on the Right) -->
             <section class="alerts">
                 <h2>Alerts</h2>
                 <div id="alertList"></div>
@@ -168,6 +242,33 @@
         </div>
 
         <script>
+
+             // Function to fetch and update the valve status
+            async function fetchValveStatus() {
+                try {
+                    const response = await fetch("http://127.0.0.1:5000/valve-status");
+                    const data = await response.json();
+
+                    const statusText = document.getElementById("statusText");
+                    const statusToggle = document.getElementById("statusToggle");
+
+                    if (data.value !== undefined) {
+                        const status = data.status.toUpperCase();
+                        statusText.innerText = `${status}`;
+                        statusToggle.checked = data.value === 1; // Open = ON
+                    } else {
+                        statusText.innerText = "Status: Unknown";
+                    }
+                } catch (error) {
+                    console.error("Error fetching valve status:", error);
+                    document.getElementById("statusText").innerText = "⚠️ Unable to fetch status";
+                }
+            }
+
+            // Refresh the valve status every 10 seconds
+            setInterval(fetchValveStatus, 10000);
+            fetchValveStatus();
+
             //Script for the data to keep refreshing
             function refreshFrames() {
                 const iframes = document.querySelectorAll('iframe');
