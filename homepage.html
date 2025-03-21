@@ -297,9 +297,68 @@
                     alertList.innerHTML = `<div class="alert-card"><span class="alert-icon">✅</span><span class="alert-text">All systems are normal.</span></div>`;
                 } else {
                     alerts.forEach((alert) => {
-                        alertList.innerHTML += `<div class="alert-card"><span class="alert-icon">⚠️</span><span class="alert-text">${alert}</span></div>`;
+                        //alertList.innerHTML += `<div class="alert-card"><span class="alert-icon">⚠️</span><span class="alert-text">${alert}</span></div>`;
+                        const alertDiv = document.createElement("div");
+                        alertDiv.classList.add("alert-card");
+
+                        const iconSpan = document.createElement("span");
+                        iconSpan.classList.add("alert-icon");
+                        iconSpan.textContent = "⚠️";
+
+                        const textSpan = document.createElement("span");
+                        textSpan.classList.add("alert-text");
+                        textSpan.textContent = alert.message;
+
+                        alertDiv.appendChild(iconSpan);
+                        alertDiv.appendChild(textSpan);
+
+                        if (alert.key){
+                            const clearButton = document.createElement("button");
+                            clearButton.textContent = "Clear";
+                            clearButton.setAttribute("data-alert-key", alert.key);
+                            clearButton.addEventListener("click", () => clearAlert(alert.key));
+                            alertDiv.appendChild(clearButton);
+                        }
+
+                        alertList.appendChild(alertDiv);
                     });
                 }
+            }
+
+            function clearAlert(alertKey){
+                console.log("Clearing alert with key:", alertKey)
+                fetch("http://127.0.0.1:5000/clear-alert", {
+                    method: "POST",
+                    headers : {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({alert_key: alertKey}),
+                })
+                .then((response) => {
+                    if (!response.ok){
+                        console.error("HTTP error:", response.status, response.statusText);
+                        return response.text().then(text => {
+                            console.error("Error response:", text);
+                            throw new Error(text || "Failed to clear alert");
+                        });
+                    }
+                    response.json();
+                })
+                .then((data) => {
+                    console.log("Clear alert response:",data) //debugg
+                    if (data.message === "Alert cleared"){
+                        fetchAlerts().then(updateAlerts);
+                    }
+                    else{
+                        console.error("Error clearing alert:", data.error);
+                        alert("Error clearing alert.");
+
+                    }
+                })
+                .catch((error)=> {
+                    console.error("Error clearing alert:", error);
+                    alert("Error clearing alert.");
+                });
             }
 
             setInterval(async () => {
