@@ -342,11 +342,11 @@
                             throw new Error(text || "Failed to clear alert");
                         });
                     }
-                    response.json();
+                    return response.json();
                 })
                 .then((data) => {
                     console.log("Clear alert response:",data) //debugg
-                    if (data.message === "Alert cleared"){
+                    if (data && data.message == "Alert cleared"){
                         fetchAlerts().then(updateAlerts);
                     }
                     else{

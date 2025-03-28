@@ -17,7 +17,7 @@ from influxdb_client import Point
 #pip install DateTime
 from datetime import datetime
 #pip install pytz
-#import pytz # type: ignore
+import pytz # type: ignore
 app = Flask(__name__)
 CORS(app, origins = ["http://127.0.0.1:5500"])
 
@@ -41,8 +41,8 @@ FLOW_ALERT = "alerts_filter2"#alerts for flow sensor
 VALVE_BUCKET = "reed_switch" #reads valve status
 
 #timezone declaration
-#utc = pytz.utc
-#central = pytz.timezone('America/Chicago')
+utc = pytz.utc
+central = pytz.timezone('America/Chicago')
 """==========================================================================================================
 ==========================================================================================================
 Email alert configuration
@@ -184,7 +184,7 @@ def get_alerts():
         from(bucket: "{FLOW_ALERT}")
         |> range(start: -10m)
         '''
-        flow_result = query_api.query(org=INFLUXDB_ORG, query=pressure_query)
+        flow_result = query_api.query(org=INFLUXDB_ORG, query=flow_query)
         for table in flow_result:
             for record in table.records:
                 timestamp = record.get_time()
@@ -299,14 +299,14 @@ def generate_report():
                 # Ensure timestamp is a datetime object before formatting
                 if isinstance(timestamp, str):  # Convert string to datetime if needed
                     timestamp = datetime.strptime(timestamp, "%Y-%m-%dT%H:%M:%SZ")
-                    #timestamp = utc.localize(timestamp)
+                    timestamp = utc.localize(timestamp)
                 # Format time in 12-hour format
                 formatted_time = timestamp.strftime("%Y-%m-%d %I:%M:%S %p")  
                 
-                #central_time = timestamp.astimezone(central)
+                central_time = timestamp.astimezone(central)
 
                 # Format time in 12-hour format
-                #formatted_time = central_time.strftime("%Y-%m-%d %I:%M:%S %p")
+                formatted_time = central_time.strftime("%Y-%m-%d %I:%M:%S %p")
 
                 # Use the value directly from the database and round to 2 decimal places
                 formatted_value = round(float(record.get_value()), 2)
