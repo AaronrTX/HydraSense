@@ -3,6 +3,7 @@
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
         <title>Fire Hydrant Monitoring</title>
 
         <!-- Flatpickr CSS -->
@@ -19,7 +20,7 @@
                 padding: 0;
             }
             body {
-                font-family: Arial, sans-serif;
+                font-family: 'Poppins', sans-serif;
                 display: flex;
                 flex-direction: column;
                 min-width: 100vh;
@@ -52,7 +53,7 @@
                 margin-bottom: 10px;
                 border-radius: 4px;
                 cursor: pointer;
-                font-size: 16px;
+                font-size: 20px;
             }
 
             .report-item:hover {
@@ -67,7 +68,8 @@
 
             .date-selection,
             .report-detail {
-                margin-top: 20px;
+                margin-top: 10px;
+                margin-bottom: 20px;
                 display: none;
                 background-color: #fff;
                 padding: 10px;
@@ -88,21 +90,25 @@
             .back-button,
             .download-button,
             .hydrant-back-button {
-                margin-top: 20px;
-                padding: 8px 16px;
+                margin-top: 40px;
+                padding: 10px 18px;
                 font-size: 16px;
                 cursor: pointer;
-                background-color: #007bff;
+                background-color: #d9534f;
                 color: white;
                 border: none;
-                border-radius: 4px;
+                border-radius: 20px;
                 text-align: center;
+                display: inline-flex;
+                align-items: center;
+                transition: background-color 0.3s ease, box-shadow 0.3s ease;
             }
 
             .back-button:hover,
             .download-button:hover,
             .hydrant-back-button:hover {
-                background-color: #0056b3;
+                background-color: #b9423f; 
+                box-shadow: 0 0 10px rgba(217, 83, 79, 0.5); 
             }
 
             .data-selection {
@@ -110,53 +116,112 @@
                 margin-top: 10px;
             }
 
-            @media (min-width: 768px) {
-                body {
-                    flex-direction: row;
-                }
+            .topnav {
+                background: linear-gradient(to right, #1dbde6, #f1515e);
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 15px 40px;
+                width: 100vw;
+                margin: 0;
+                position: sticky;
+                top: 0;
+                z-index: 1000;
+                box-sizing: border-box;
             }
+
+            .logo {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+            }
+
+            .hydrant-img {
+                height: 36px;
+                width: auto;
+            }
+
+            .brand-name {
+                font-size: 30px;
+                font-weight: 700;
+                color: #fff;
+                letter-spacing: 1px;
+            }
+
+            .nav-links {
+                font-weight: 500;
+                display: flex;
+                gap: 40px;
+            }
+
+            .nav-links a {
+                color: #fff;
+                text-decoration: none;
+                font-size: 18px;
+                transition: all 0.3s ease;
+                padding: 8px 16px;
+                border-radius: 20px;
+            }
+
+            .nav-links a:hover {
+                background-color: #9CAAC6;
+                color: #fff;
+                box-shadow: 0 0 10px rgba(217, 83, 79, 0.5);
+            }
+            
+            .back-button-container {
+                display: flex;
+                justify-content: flex-start;
+                margin-top: 10px;
+            }
+
         </style>
     </head>
     <body>
+        <nav class="topnav">
+            <div class="logo">
+                <img src="hd_log.png" alt="HydraSense Logo" class="hydrant-img">
+                <span class="brand-name">HydraSense</span>
+            </div>
+            <div class="nav-links">
+                <a href="homepage.html">Homepage</a>
+                <a href="report.html">Report</a>
+                <a href="map.html">Maps</a>  
+            </div>
+        </nav>
         <div class="container">
-            <iframe
-                src="sidebar.html"
-                width="15%"
-                height="100%"
-                frameborder="0"
-                style="height: 100vh; min-width: 150px"
-            ></iframe>
             <div class="main-content">
                 <h2>Fire Hydrant Reports</h2>
 
                 <div class="report-list" id="hydrant-selection">
                     <div class="report-item" onclick="selectHydrant('hydrant1')">
                         <span>Hydrant #1</span>
-                        <img src="firehydrant.jpg" alt="Status Icon" class="status-icon" />
                     </div>
                     <div class="report-item" onclick="selectHydrant('hydrant2')">
                         <span>Hydrant #2</span>
-                        <img src="firehydrant.jpg" alt="Status Icon" class="status-icon" />
                     </div>
                     <div class="report-item" onclick="selectHydrant('hydrant3')">
                         <span>Hydrant #3</span>
-                        <img src="firehydrant.jpg" alt="Status Icon" class="status-icon" />
                     </div>
                     <div class="report-item" onclick="selectHydrant('hydrant4')">
                         <span>Hydrant #4</span>
-                        <img src="firehydrant.jpg" alt="Status Icon" class="status-icon" />
                     </div>
                 </div>
 
                 <div id="date-selection" class="date-selection">
+                    <div class="back-button-container">
+                        <button class="hydrant-back-button" onclick="goToHydrantSelection()">
+                            ←
+                        </button>
+                    </div>
                     <h3>Select Report Date</h3>
-                    <input id="date-picker" type="text" placeholder="Choose a date" readonly />
-                    <button class="hydrant-back-button" onclick="goToHydrantSelection()">
-                        Back to Hydrant Selection
-                    </button>
+                    <input id="date-picker" type="text" placeholder="Choose a date" readonly />     
                 </div>
 
                 <div id="report-detail" class="report-detail">
+                    <div class="back-button-container">
+                        <button class="back-button" onclick="goBack()"> ←</button>
+                    </div>
                     <h3 id="report-title"></h3>
                     <p id="report-content">
                         The data for the selected hydrant and date will be displayed here.
@@ -169,11 +234,8 @@
                             <option value="flow">Flow</option>
                         </select>
                     </div>
-
-                    <button class="back-button" onclick="goBack()">Return to Date Selection</button>
-                    
                     <a id="download-data-button" class="download-button" href="#" onclick="downloadPDFReport()">
-                        Download Report as PDF
+                        ⬇ Download PDF
                     </a>
                 </div>
             </div>

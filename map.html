@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>QGIS Map with Local GeoJSON</title>
+        <style>
+            html, body {
+                height: 100%;
+                margin: 0;
+                padding: 0;
+                font-family: 'Poppins', sans-serif;
+            }
+
+            .topnav {
+                background: linear-gradient(to right, #1dbde6, #f1515e);
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 15px 40px;
+                width: 100vw;
+                position: sticky;
+                top: 0;
+                z-index: 1000;
+                box-sizing: border-box;
+            }
+
+            .logo {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+            }
+
+            .hydrant-img {
+                height: 36px;
+                width: auto;
+            }
+
+            .brand-name {
+                font-size: 30px;
+                font-weight: 700;
+                color: #fff;
+                letter-spacing: 1px;
+            }
+
+            .nav-links {
+                font-weight: 500;
+                display: flex;
+                gap: 40px;
+            }
+
+            .nav-links a {
+                color: #fff;
+                text-decoration: none;
+                font-size: 18px;
+                transition: all 0.3s ease;
+                padding: 8px 16px;
+                border-radius: 20px;
+            }
+
+            .nav-links a:hover {
+                background-color: #9CAAC6;
+                color: #fff;
+                box-shadow: 0 0 10px rgba(217, 83, 79, 0.5);
+            }
+
+            .container {
+                display: flex;
+                height: calc(100% - 70px); /* Adjust for nav bar height */
+                width: 100%;
+            }
+            #map {
+                height: 100%;
+                flex-grow: 1;
+            }
+            #map iframe{
+                width: 100%;
+                height: 100%;
+            }
+        </style>
+    </head>
+
+    <body>
+
+        <nav class="topnav">
+            <div class="logo">
+                <img src="hd_log.png" alt="HydraSense Logo" class="hydrant-img">
+                <span class="brand-name">HydraSense</span>
+            </div>
+            <div class="nav-links">
+                <a href="homepage.html">Homepage</a>
+                <a href="report.html">Report</a>
+                <a href="map.html">Maps</a>  
+            </div>
+        </nav>
+        
+        <div class="container">
+            <div id="map">
+                <iframe src="https://editor.giscloud.com/rest/1/maps/2868297/render.iframe?bound=-10834834.103881283,3846731.66696563,-10785914.40577877,3869204.1532814708&toolbar=true&popups=true&layerlist=true&search=true" width="600" height="400" frameborder="0"></iframe>
+            </div>
+        </div>
+
+        <script>
+            function resizemap() {
+
+            }
+
+            window.addEventListener('resize', resizemap) //resizeMap on window resize
+
+            //call resizemap, flexbox will manage the size.
+            resizemap();
+
+        </script>
+    </body>
+</html>

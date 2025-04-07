@@ -3,6 +3,8 @@
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+
         <title>Fire Hydrant Monitoring</title>
         <style>
             /* CSS Styles */
@@ -16,37 +18,71 @@
             body {
                 height: 100%;
                 width: 100%;
-                font-family: Arial, sans-serif;
-                background-color: #f7f9fc;
+                font-family: 'Poppins', sans-serif;
+                background-color: #ddebf7;
                 color: #333;
             }
 
             .container {
+                margin-top: 0px;
                 display: grid;
-                grid-template-columns: 1fr 3fr 1fr; /* Sidebar | Main Content | Alerts */
+                grid-template-columns: 3fr 1fr; /* Main Content | Alerts */
                 width: 100%;
-                height: 100%;
+                height: calc(100% - 60px);
             }
 
-            .sidebar {
-                background-color: #2e3b4e;
-                color: #fff;
+            .topnav {
+                /*background: linear-gradient(to right, #ff1b6b, #45caff);*/
+                background: linear-gradient(to right, #1dbde6, #f1515e);
                 display: flex;
-                flex-direction: column;
+                justify-content: space-between;
                 align-items: center;
-                padding: 20px;
-                gap: 15px;
+                padding: 15px 40px;        /* Smaller side padding */
+                width: 100vw;              /* Full page width */
+                margin: 0;                 /* Remove any auto-margin */
+                position: sticky;
+                top: 0;
+                z-index: 1000;
+                box-sizing: border-box;    /* Prevent overflow due to padding */
+}
+
+
+            .logo {
+                display:flex;
+                align-items: center;
+                gap: 10px;
             }
 
-            .sidebar a {
+            .hydrant-img {
+                height: 36px;
+                width: auto;
+            }
+
+            .brand-name {
+                font-size: 30px;
+                font-weight: 700;
+                color: #fff;
+                letter-spacing:1px;
+            }
+            .nav-links {
+                font-weight: 500;
+                display: flex;
+                gap: 40px;
+            }
+
+            .nav-links a {
                 color: #fff;
                 text-decoration: none;
                 font-size: 18px;
-                transition: color 0.3s;
+                transition: all 0.3s ease;
+                padding: 8px 16px;
+                border-radius: 20px;
             }
 
-            .sidebar a:hover {
-                color: #a2d2ff;
+            .nav-links a:hover {
+                background-color: #9CAAC6;
+                color: #fff;
+                box-shadow: 0 0 10px rgba(217, 83, 79, 0.5);
             }
 
             .main-content {
@@ -77,11 +113,13 @@
 
             .metric {
                 text-align: center;
-                border: 2px solid #d1d1d1;
-                background-color: #ffffff;
+                background-color: #fff;
+                border: 2px solid #2e3b4e;  
+                border-radius: 8px;         
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); 
                 width: 80%;
                 padding: 20px;
-                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+                margin-bottom: 20px;
             }
 
             .metric h2 {
@@ -98,7 +136,7 @@
              /* Valve Status Card (Placed Below Data Panels) */
              .status-card {
                 background-color: #fff;
-                border: 2px solid #2e3b4e;
+                border: 2px solid #2a3a53;
                 border-radius: 8px;
                 box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
                 padding: 15px;
@@ -161,7 +199,7 @@
 
             .alerts {
                 background-color: #fff;
-                border: 2px solid #d9534f;
+                border: 2px solid #2a3a53;
                 border-radius: 8px;
                 box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
                 padding: 15px;
@@ -173,7 +211,7 @@
             .alerts h2 {
                 font-size: 20px;
                 margin-bottom: 10px;
-                color: #d9534f;
+                color: #2e3b4e;
             }
 
             .alert-card {
@@ -198,19 +236,22 @@
     </head>
 
     <body>
-        <div class="container">
-            <!-- Sidebar -->
-            <div class="sidebar">
+        <!--Top Nav Bar-->
+        <nav class="topnav">
+            <div class="logo"> 
+                <img src="hd_log.png" alt="HydraSense Logo" class="hydrant-img">
+                <span class="brand-name">HydraSense</span>
+            </div>
+            <div class="nav-links">
                 <a href="homepage.html">Homepage</a>
                 <a href="report.html">Report</a>
-                <a href="testing.html">Maps</a>
-            </div>
+                <a href="map.html">Maps</a>  
+            </div>   
+        </nav>
 
+        <div class="container">
             <!-- Main Content -->
             <div class="main-content">
-                <header>
-                    <h1>Homepage</h1>
-                </header>
 
                 <section class="metrics">
                     <div class="metric">
