@@ -105,7 +105,7 @@ def download_data():
     
     query = f'''
     from(bucket: "{PRESSURE_BUCKET}")
-    |> range(start: -10m)
+    |> range(start: -1d)
     '''
 
     data = query_api.query(org=INFLUXDB_ORG, query=query)
@@ -266,10 +266,12 @@ def generate_report():
 
         if data_type == "flow":
             bucket = FLOW_BUCKET  # demo_bucket
-            measurement = "Pilot2"
+            measurement = "flow"
+            value_field = "flowValue"
         else:
             bucket = PRESSURE_BUCKET  # demo_2
-            measurement = "Pilot"
+            measurement = "pressure_sensor"
+            value_field = "pressureValue"
 
         print(f"Generating report for: {hydrant_id}, Data Type: {data_type}, Bucket: {bucket}")
 
@@ -279,8 +281,11 @@ def generate_report():
 
         query = f'''
         from(bucket: "{bucket}")
-        |> range(start: -10m)
+        |> range(start: -1d)
         |> filter(fn: (r) => r["_measurement"] == "{measurement}")
+        |> pivot (rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
+        |> keep(columns: ["_time", "{value_field}"])
+        |>rename(columns:{{"{value_field}": "Value"}})
         '''
 
         print("Executing Query:", query)  # Debugging
@@ -300,24 +305,28 @@ def generate_report():
                 if isinstance(timestamp, str):  # Convert string to datetime if needed
                     timestamp = datetime.strptime(timestamp, "%Y-%m-%dT%H:%M:%SZ")
                     timestamp = utc.localize(timestamp)
-                # Format time in 12-hour format
-                formatted_time = timestamp.strftime("%Y-%m-%d %I:%M:%S %p")  
-                
+            
                 central_time = timestamp.astimezone(central)
 
                 # Format time in 12-hour format
                 formatted_time = central_time.strftime("%Y-%m-%d %I:%M:%S %p")
 
                 # Use the value directly from the database and round to 2 decimal places
-                formatted_value = round(float(record.get_value()), 2)
+                #formatted_value = round(float(record.get_value()), 2)
 
                 # Append data to the table
-                table_data.append([
+                try:
+                    formatted_value = round(float(record["Value"]), 2) 
+                    table_data.append([
                     formatted_time,
                     formatted_value,
-                    record.get_field()
-                ])
-                record_count += 1
+                    "PSI" if data_type == "pressure" else "GPM"])
+                    record_count += 1
+                
+                except KeyError as e:
+                    print(f"KeyError: {e} in record: {record}")  # Debugging
+                except ValueError as e:
+                    print(f"ValueError: {e} in record: {record}")  # Debugging
 
         print(f"Records retrieved: {record_count}")
 
