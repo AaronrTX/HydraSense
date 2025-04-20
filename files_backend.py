@@ -15,7 +15,11 @@ from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.lib.pagesizes import letter
 from influxdb_client import Point
 #pip install DateTime
-from datetime import datetime
+from datetime import datetime, timezone
+
+startup_time = datetime.now(timezone.utc)
+
+
 #pip install pytz
 import pytz # type: ignore
 app = Flask(__name__)
@@ -53,29 +57,65 @@ def send_email(subject, body, alert_key):
     sender_password = "fycw zltn nror aycq"    
     recipient_email = "hydrasense2025@gmail.com"  
 
-    msg = MIMEMultipart()
-    msg["From"] = sender_email
-    msg["To"] = recipient_email
-    msg["Subject"] = subject
-    msg.attach(MIMEText(body, "plain"))
+    
 
     #check if alert email has been sent
     if alert_key in sent_alerts:
         print(f"Alert '{alert_key}' already sent. Skipping")
         return
+    
     try:
-        server = smtplib.SMTP("smtp.gmail.com", 587)
-        server.starttls()
-        server.login(sender_email, sender_password)
-        server.sendmail(sender_email, recipient_email, msg.as_string())
-        server.quit()
-        sent_alerts.add(alert_key)
-        print("Alert email sent successfully!")
+
+        #DEBUG PRINTS TODO: REMOVE THESE LATER
+        #print(f"[DEBUG] preparing to send email for alert_key : {alert_key}")
+        #print(f"[DEBUG] Email Subject: {subject}")
+        #print(f"[DEBUG] Email Body: {body}")
+        msg = MIMEMultipart()
+        msg["From"] = sender_email
+        msg["To"] = recipient_email
+        msg["Subject"] = subject
+        msg.attach(MIMEText(body, "plain"))
+
+        try:
+            #print(f"[DEBUG' Connecting to SMTP server...")
+            server = smtplib.SMTP("smtp.gmail.com", 587)
+            server.set_debuglevel(1)  # Enable debug output for SMTP connection
+            server.starttls()
+            server.login(sender_email, sender_password)
+            #print(f"[DEBUG] LOGGED IN!")
+        except Exception as login_error:
+            #print(f"[SMTP INIT ERROR] {e}")
+            login_error_msg = f"Error connecting to SMTP server: {login_error}"
+            return
+#-------Attempt to send email-------
+        email_sent = False #flag to keep track of if the email was sent
+        try:
+            server.sendmail(sender_email, recipient_email, msg.as_string())
+            #print(f"[DEBUG] Email sent successfully!")
+        #server.quit()
+            sent_alerts.add(alert_key)
+            email_sent = True #set the flag to true if email was sent successfully
+        #print("Alert email sent successfully!")
+        except Exception as send_error:
+            logging.error(f"Error sending email: {send_error}")
+            #print(f"Error sending email: {send_error}")
+        finally:
+
+            try:
+                server.quit()
+                #print(f"[DEBUG] SMTP server connection closed.")
+            except Exception as close_error:
+                logging.error(f"Error closing SMTP server connection: {close_error}")
+                #print(f"Error closing SMTP server connection: {close_error}")
+        #time.sleep(1)  # Optional: Add a small delay before the next email to avoid rate limiting
+        if email_sent:
+            time.sleep(10)
+            
     except smtplib.SMTPServerDisconnected as e:
-        print(f"Connection unexpectedly closed: {e}")
+        #print(f"Connection unexpectedly closed: {e}")
         logging.error(f"Connection unexpectedly closed: {e}")
     except Exception as e:
-        print("Error sending email:", e)
+        #print("Error sending email:", e)
         logging.error(f"An error occurred: {e}")
 
 # To keep track of sent alerts
@@ -103,9 +143,10 @@ def download_data():
     client = InfluxDBClient(url=INFLUXDB_URL, token=INFLUXDB_TOKEN, org=INFLUXDB_ORG)
     query_api = client.query_api()
     
+    #TODO : Will need to update this to like maybe 10m ?
     query = f'''
     from(bucket: "{PRESSURE_BUCKET}")
-    |> range(start: -1d)
+    |> range(start: -2d) 
     '''
 
     data = query_api.query(org=INFLUXDB_ORG, query=query)
@@ -144,7 +185,7 @@ def get_alerts():
         def is_alert_cleared(alert_key, bucket):
             query =  f'''
             from(bucket: "{bucket}")
-            |> range(start: -10m)
+            |> range(start: -15m)
             |> filter(fn: (r) => r["alert_key"] == "{alert_key}")
             |> filter(fn: (r) => r["cleared"] == "true")
             '''
@@ -156,50 +197,59 @@ def get_alerts():
 
         pressure_query = f'''
         from(bucket: "{PRESSURE_ALERT}")
-        |> range(start: -10m)
+        |> range(start: -15m)
+        |> filter(fn: (r) => r["_field"] == "pressureValue")
         '''
         pressure_result = query_api.query(org=INFLUXDB_ORG, query=pressure_query)
         for table in pressure_result:
             for record in table.records:
+                #DEBUG PRINT STATEMENT
+                #print(f"FIELDS: {record.values}")
+
                 timestamp = record.get_time()
-                value = record.get_value()
+                pressure_value = record.get_value()
                 #measurement = record.get_measurement()#for debugging purposes, can ignore 
 
                 #alert_msg = f"Pressure Alert from {measurement}: Value = {value}"
-                alert_msg = f"Pressure Alert: Value = {value}. At the time: = {timestamp}"
+                alert_msg = f"Pressure Alert: Value = {pressure_value}. At the time: = {timestamp}"
                 
                 #all_alerts.append(alert_msg)
                 
                 #alert_key = f"pressure_alert_{timestamp}_{value}_{measurement}"
-                alert_key = f"pressure_alert_{timestamp}_{value}"
+                alert_key = f"pressure_alert|{timestamp}|{pressure_value}"
 
-                if not is_alert_cleared(alert_key, PRESSURE_ALERT):
+                #TODO : Test this
+                alert_time = record.get_time()
+                if not is_alert_cleared(alert_key, PRESSURE_ALERT) and alert_time > startup_time:
                     all_alerts.append({"message": alert_msg, "key":alert_key})
                     if alert_key not in sent_alerts:
                         send_email("Pressure Alert", alert_msg, alert_key)
         
         #Flow_alert bucket
-        #Pressure_alert bucket
+        #Pressure_alert bucket (TODO : rever to -10m)
         flow_query = f'''
         from(bucket: "{FLOW_ALERT}")
-        |> range(start: -10m)
+        |> range(start: -15m)
+        |> filter(fn: (r) => r["_field"] == "flowValue")
         '''
         flow_result = query_api.query(org=INFLUXDB_ORG, query=flow_query)
         for table in flow_result:
             for record in table.records:
                 timestamp = record.get_time()
-                value = record.get_value()
+                flow_value = record.get_value()
                 #measurement = record.get_measurement()#for debugging purposes, can ignore later
 
                 #alert_msg = f"Flow Alert from {measurement}: Value = {value}"
-                alert_msg = f"Flow Alert: Value = {value}. At the time: {timestamp}"
+                alert_msg = f"Flow Alert: Value = {flow_value}. At the time: {timestamp}"
                 
                 #all_alerts.append(alert_msg)
                 
                 #alert_key = f"flow_alert_{timestamp}_{value}_{measurement}"
-                alert_key = f"flow_alert_{timestamp}_{value}"
+                alert_key = f"flow_alert|{timestamp}|{flow_value}"
 
-                if not is_alert_cleared(alert_key, FLOW_ALERT):
+                #TODO : Test this
+                alert_time = record.get_time()
+                if not is_alert_cleared(alert_key, FLOW_ALERT) and alert_time > startup_time:
                     all_alerts.append({"message": alert_msg, "key":alert_key})
                     if alert_key not in sent_alerts:
                         send_email("Flow Alert", alert_msg, alert_key)
@@ -235,7 +285,7 @@ def clear_alert():
             bucket = FLOW_ALERT
         else:
             return jsonify({"error": "Unkown alert type"}), 400
-        parts = alert_key.split("_")
+        parts = alert_key.split("|")
         if len(parts) <4:
             return jsonify({"error":"invalid alert key format"}),400
        
@@ -254,6 +304,12 @@ def clear_alert():
     except Exception as e:
         print(f"Error clearing alert: {str(e)}") #debugg
         return jsonify({"error" : f"Error clearing alert: {str(e)}"}), 500
+    
+"""==========================================================================================================
+==========================================================================================================
+Generate the reports
+==========================================================================================================
+=========================================================================================================="""
 
 @app.route('/generate-report', methods=['GET'])
 def generate_report():
@@ -266,7 +322,7 @@ def generate_report():
 
         if data_type == "flow":
             bucket = FLOW_BUCKET  # demo_bucket
-            measurement = "flow"
+            measurement = "flow_sensor"
             value_field = "flowValue"
         else:
             bucket = PRESSURE_BUCKET  # demo_2
@@ -281,7 +337,7 @@ def generate_report():
 
         query = f'''
         from(bucket: "{bucket}")
-        |> range(start: -1d)
+        |> range(start: -2d)
         |> filter(fn: (r) => r["_measurement"] == "{measurement}")
         |> pivot (rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
         |> keep(columns: ["_time", "{value_field}"])
@@ -364,6 +420,11 @@ def generate_report():
         print("Error Generating Report:", str(e))  # Debugging
         return jsonify({"error": f"Failed to generate report: {str(e)}"}), 500
     
+"""==========================================================================================================
+==========================================================================================================
+Get the valve status
+==========================================================================================================
+=========================================================================================================="""    
 
 @app.route('/valve-status', methods=['GET'])
 def get_valve_status():
@@ -374,7 +435,7 @@ def get_valve_status():
         query = f'''
         from(bucket: "reed_switch")
         |> range(start: -10m)
-        |> filter(fn: (r) => r["_measurement"] == "Status")
+        |> filter(fn: (r) => r["_measurement"] == "valve")
         |> filter(fn: (r) => r["_field"] == "value")
         |> last()
         '''
@@ -396,7 +457,7 @@ def get_valve_status():
                     return jsonify({"error": f"Invalid valve status value: {raw_value}"}), 400
 
                 # 🔄 Determine valve status
-                valve_status = "CLOSED" if value == 0 else "OPEN"
+                valve_status = "CLOSED" if value == 1 else "OPEN"
 
                 # ✅ Return JSON response
                 return jsonify({"value": value, "status": valve_status})
