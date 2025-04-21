@@ -1,0 +1,1049 @@
+[
+    {
+        "id": "6a8ca03819747757",
+        "type": "tab",
+        "label": "Flow 1",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "cfaa2d00f9ff0f10",
+        "type": "comment",
+        "z": "6a8ca03819747757",
+        "name": "Testing for website examples",
+        "info": "",
+        "x": 200,
+        "y": 60,
+        "wires": []
+    },
+    {
+        "id": "6bd7037d06cbc9bf",
+        "type": "influxdb out",
+        "z": "6a8ca03819747757",
+        "influxdb": "787c32ed71fc3d33",
+        "name": "pressure_sensor",
+        "measurement": "Pilot",
+        "precision": "",
+        "retentionPolicy": "",
+        "database": "database",
+        "precisionV18FluxV20": "ms",
+        "retentionPolicyV18Flux": "",
+        "org": "HydraSense",
+        "bucket": "pressure_sensor",
+        "x": 810,
+        "y": 60,
+        "wires": []
+    },
+    {
+        "id": "78a9fb17418f240c",
+        "type": "inject",
+        "z": "6a8ca03819747757",
+        "d": true,
+        "name": "pressure",
+        "props": [
+            {
+                "p": "value",
+                "v": "50*$random()",
+                "vt": "jsonata"
+            }
+        ],
+        "repeat": "5",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "x": 180,
+        "y": 160,
+        "wires": [
+            [
+                "ecc24c6ecb1045d6"
+            ]
+        ]
+    },
+    {
+        "id": "ecc24c6ecb1045d6",
+        "type": "change",
+        "z": "6a8ca03819747757",
+        "name": "Data Format",
+        "rules": [
+            {
+                "t": "set",
+                "p": "fields.pressure",
+                "pt": "msg",
+                "to": "value",
+                "tot": "msg"
+            },
+            {
+                "t": "set",
+                "p": "tags.timestamp",
+                "pt": "msg",
+                "to": "",
+                "tot": "date"
+            },
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "$append(fields,tags)",
+                "tot": "jsonata"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 370,
+        "y": 160,
+        "wires": [
+            [
+                "012c274bcc6ba5a9"
+            ]
+        ]
+    },
+    {
+        "id": "afddfb4a2d42dfee",
+        "type": "inject",
+        "z": "6a8ca03819747757",
+        "d": true,
+        "name": "temperature",
+        "props": [
+            {
+                "p": "value",
+                "v": "45*$random()",
+                "vt": "jsonata"
+            }
+        ],
+        "repeat": "5",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "x": 190,
+        "y": 540,
+        "wires": [
+            [
+                "c787251d18f7a125"
+            ]
+        ]
+    },
+    {
+        "id": "c787251d18f7a125",
+        "type": "change",
+        "z": "6a8ca03819747757",
+        "name": "Data format 2",
+        "rules": [
+            {
+                "t": "set",
+                "p": "fields.temperature",
+                "pt": "msg",
+                "to": "value",
+                "tot": "msg"
+            },
+            {
+                "t": "set",
+                "p": "tags.timestamp",
+                "pt": "msg",
+                "to": "",
+                "tot": "date"
+            },
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "$append(fields,tags)",
+                "tot": "jsonata"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 380,
+        "y": 540,
+        "wires": [
+            [
+                "b8a6e52aa051b957"
+            ]
+        ]
+    },
+    {
+        "id": "33506614f4328067",
+        "type": "influxdb out",
+        "z": "6a8ca03819747757",
+        "influxdb": "787c32ed71fc3d33",
+        "name": "flow_bucket",
+        "measurement": "flow_sensor",
+        "precision": "",
+        "retentionPolicy": "",
+        "database": "database",
+        "precisionV18FluxV20": "ms",
+        "retentionPolicyV18Flux": "",
+        "org": "HydraSense",
+        "bucket": "flow_sensor",
+        "x": 970,
+        "y": 1120,
+        "wires": []
+    },
+    {
+        "id": "bbe54c95c63ec3db",
+        "type": "influxdb out",
+        "z": "6a8ca03819747757",
+        "influxdb": "787c32ed71fc3d33",
+        "name": "alerts_filtered2",
+        "measurement": "alert",
+        "precision": "",
+        "retentionPolicy": "",
+        "database": "database",
+        "precisionV18FluxV20": "ms",
+        "retentionPolicyV18Flux": "",
+        "org": "HydraSense",
+        "bucket": "alerts_filter2",
+        "x": 1480,
+        "y": 1180,
+        "wires": []
+    },
+    {
+        "id": "b8a6e52aa051b957",
+        "type": "function",
+        "z": "6a8ca03819747757",
+        "name": "function 2",
+        "func": "const temp = msg.fields.temperature\nconst time = msg.tags.timestamp\nconst tempThreshold = 2\n//send main bucket no matter what\n//node.send([msg, null]);\n\nif (temp < tempThreshold)\n{\n    msg.alert = true;\n    //if below threshold, then send to alrt bucket\n    msg.tags.timestamp = time; //include timestamp for alert bucket\n    //node.send([null,alertMsg]);\n    /*let alertMsg = JSON.parse(JSON.stringify(msg));\n\n    alertMsg.payload.timestamp = time;\n\n    node.send([null, alertMsg]);*/\n}\n\nelse{\n    msg.alert = false;\n}\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 580,
+        "y": 540,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "75bbb7bce301df25",
+        "type": "switch",
+        "z": "6a8ca03819747757",
+        "name": "routing",
+        "property": "payload.alert",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "false"
+            },
+            {
+                "t": "true"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 1010,
+        "y": 1180,
+        "wires": [
+            [],
+            [
+                "e41c0178c825aeee"
+            ]
+        ]
+    },
+    {
+        "id": "fc37ac41bc51298c",
+        "type": "debug",
+        "z": "6a8ca03819747757",
+        "name": "flow_alert_bucket",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload.alert",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1330,
+        "y": 1280,
+        "wires": []
+    },
+    {
+        "id": "37100798df868761",
+        "type": "mqtt in",
+        "z": "6a8ca03819747757",
+        "name": "",
+        "topic": "sensors",
+        "qos": "2",
+        "datatype": "auto-detect",
+        "broker": "c4895a47c49d754a",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 70,
+        "y": 1100,
+        "wires": [
+            [
+                "db959c28405794c8",
+                "a7bd3778dbf6c372"
+            ]
+        ]
+    },
+    {
+        "id": "012c274bcc6ba5a9",
+        "type": "function",
+        "z": "6a8ca03819747757",
+        "name": "function 1",
+        "func": "const pres = msg.fields.pressure\nconst time = msg.tags.timestamp\nconst pressureThreshold = 2\n\nif (pres < pressureThreshold)\n{\n    msg.alert = true;\n    msg.tags.timestamp = time; //include timestamp for alert bucket\n}\n\nelse{\n    msg.alert = false;\n}\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 580,
+        "y": 160,
+        "wires": [
+            [
+                "6bd7037d06cbc9bf",
+                "5482b942e9ef67a7"
+            ]
+        ]
+    },
+    {
+        "id": "5482b942e9ef67a7",
+        "type": "switch",
+        "z": "6a8ca03819747757",
+        "name": "routing",
+        "property": "alert",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "false"
+            },
+            {
+                "t": "true"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 790,
+        "y": 160,
+        "wires": [
+            [],
+            [
+                "6c7eab865cb67c49"
+            ]
+        ]
+    },
+    {
+        "id": "e0c9f056c5aba21c",
+        "type": "influxdb out",
+        "z": "6a8ca03819747757",
+        "influxdb": "787c32ed71fc3d33",
+        "name": "alerts_filter1",
+        "measurement": "Pilot4",
+        "precision": "",
+        "retentionPolicy": "",
+        "database": "database",
+        "precisionV18FluxV20": "ms",
+        "retentionPolicyV18Flux": "",
+        "org": "organisation",
+        "bucket": "alerts_filter1",
+        "x": 1030,
+        "y": 160,
+        "wires": []
+    },
+    {
+        "id": "ebce2ced79f719d9",
+        "type": "debug",
+        "z": "6a8ca03819747757",
+        "name": "alert-bucket",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "alert",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1030,
+        "y": 300,
+        "wires": []
+    },
+    {
+        "id": "d3e132ac0ec46426",
+        "type": "comment",
+        "z": "6a8ca03819747757",
+        "name": "Flow Sensor",
+        "info": "For now it's temperature, but it should be flow",
+        "x": 170,
+        "y": 480,
+        "wires": []
+    },
+    {
+        "id": "94b765a4a01346ae",
+        "type": "comment",
+        "z": "6a8ca03819747757",
+        "name": "Pressure Sensor",
+        "info": "",
+        "x": 180,
+        "y": 120,
+        "wires": []
+    },
+    {
+        "id": "2d82d47b0f9731a7",
+        "type": "comment",
+        "z": "6a8ca03819747757",
+        "name": "reed_switch ",
+        "info": "",
+        "x": 170,
+        "y": 720,
+        "wires": []
+    },
+    {
+        "id": "0fe13d40f180b94b",
+        "type": "function",
+        "z": "6a8ca03819747757",
+        "name": "function 3",
+        "func": "msg.fields = {};\nmsg.tags = {};\n\nmsg.fields.status = Math.random() < 0.5 ? 0 : 1;\nmsg.tags.timestamp = Date.now();\n\nmsg.payload = {\n    value: msg.fields.status,\n    timestamp: msg.tags.timestamp\n}\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 400,
+        "y": 780,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "fbbc4d79b949f063",
+        "type": "influxdb out",
+        "z": "6a8ca03819747757",
+        "influxdb": "787c32ed71fc3d33",
+        "name": "reed-switch-bucket",
+        "measurement": "valve",
+        "precision": "",
+        "retentionPolicy": "",
+        "database": "database",
+        "precisionV18FluxV20": "ms",
+        "retentionPolicyV18Flux": "",
+        "org": "organisation",
+        "bucket": "reed_switch",
+        "x": 1030,
+        "y": 1060,
+        "wires": []
+    },
+    {
+        "id": "6c7eab865cb67c49",
+        "type": "change",
+        "z": "6a8ca03819747757",
+        "name": "add_cleared_tag",
+        "rules": [
+            {
+                "t": "set",
+                "p": "tags.cleared",
+                "pt": "msg",
+                "to": "false",
+                "tot": "bool"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 810,
+        "y": 260,
+        "wires": [
+            [
+                "e0c9f056c5aba21c",
+                "ebce2ced79f719d9"
+            ]
+        ]
+    },
+    {
+        "id": "e41c0178c825aeee",
+        "type": "change",
+        "z": "6a8ca03819747757",
+        "name": "alerts_cleared_tag",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload.cleared",
+                "pt": "msg",
+                "to": "false",
+                "tot": "bool"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 1210,
+        "y": 1180,
+        "wires": [
+            [
+                "bbe54c95c63ec3db",
+                "fc37ac41bc51298c"
+            ]
+        ]
+    },
+    {
+        "id": "9ce6765f174c0850",
+        "type": "mqtt in",
+        "z": "6a8ca03819747757",
+        "d": true,
+        "name": "",
+        "topic": "testing",
+        "qos": "2",
+        "datatype": "auto-detect",
+        "broker": "343397a9ad2f3cc1",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 1290,
+        "y": 600,
+        "wires": [
+            [
+                "94d2a1d86224e42f"
+            ]
+        ]
+    },
+    {
+        "id": "94d2a1d86224e42f",
+        "type": "debug",
+        "z": "6a8ca03819747757",
+        "name": "debug 2",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1480,
+        "y": 600,
+        "wires": []
+    },
+    {
+        "id": "da4d05f9d5c90cbc",
+        "type": "mqtt in",
+        "z": "6a8ca03819747757",
+        "d": true,
+        "name": "testing2",
+        "topic": "valve/flow/pressure",
+        "qos": "2",
+        "datatype": "auto-detect",
+        "broker": "fef4c2ed13724d63",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 1290,
+        "y": 680,
+        "wires": [
+            [
+                "e7583b7db4840535"
+            ]
+        ]
+    },
+    {
+        "id": "e7583b7db4840535",
+        "type": "debug",
+        "z": "6a8ca03819747757",
+        "name": "debug 3",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1480,
+        "y": 680,
+        "wires": []
+    },
+    {
+        "id": "f08a2fe7d2aca11f",
+        "type": "comment",
+        "z": "6a8ca03819747757",
+        "name": "valve,flow,pressure",
+        "info": "",
+        "x": 290,
+        "y": 1040,
+        "wires": []
+    },
+    {
+        "id": "db959c28405794c8",
+        "type": "function",
+        "z": "6a8ca03819747757",
+        "name": "Main Function",
+        "func": "var data = msg.payload.split(\",\");\nnode.log(\"Input Payload: \" + msg.payload);\nnode.log(\"Split Data: \" + JSON.stringify(data));\n\nif (data.length === 3) {\n    // Create payload objects\n    var valvePayload = {\n        value: parseInt(data[0]),\n        timestamp: Date.now()\n    };\n\n    var flowPayload = {\n        value: parseFloat(data[1]),\n        timestamp: Date.now()\n    };\n\n    var pressurePayload = {\n        value: parseFloat(data[2]),\n        timestamp: Date.now()\n    };\n\n    // Create the messages with specific topics\n    var valveMsg = { payload: valvePayload, topic: \"valve\" };\n    var flowMsg = { payload: flowPayload, topic: \"flow\" };\n    var pressureMsg = { payload: pressurePayload, topic: \"pressure\" };\n\n    node.log(\"Valve Output: \" + JSON.stringify(valveMsg));\n    node.log(\"Flow Output: \" + JSON.stringify(flowMsg));\n    node.log(\"Pressure Output: \" + JSON.stringify(pressureMsg));\n\n    // Send each message to its corresponding output port (0, 1, and 2)\n    node.send([valveMsg, flowMsg, pressureMsg]);\n} else {\n    node.warn(\"Invalid data format: \" + msg.payload);\n    return null;\n}",
+        "outputs": 3,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 280,
+        "y": 1180,
+        "wires": [
+            [
+                "d9e550fb5be1955b"
+            ],
+            [
+                "d27b729dd0ac647e"
+            ],
+            [
+                "f676f7ec426ae382"
+            ]
+        ]
+    },
+    {
+        "id": "1ba09ff92dbd0646",
+        "type": "influxdb out",
+        "z": "6a8ca03819747757",
+        "influxdb": "787c32ed71fc3d33",
+        "name": "pressure_sensor",
+        "measurement": "pressure_sensor",
+        "precision": "",
+        "retentionPolicy": "",
+        "database": "database",
+        "precisionV18FluxV20": "ms",
+        "retentionPolicyV18Flux": "",
+        "org": "HydraSense",
+        "bucket": "pressure_sensor",
+        "x": 1010,
+        "y": 1340,
+        "wires": []
+    },
+    {
+        "id": "f676f7ec426ae382",
+        "type": "function",
+        "z": "6a8ca03819747757",
+        "name": "pressure function",
+        "func": "const pressureValue = msg.payload.value;\nconst timestamp = msg.payload.timestamp;\nconst alert_cleared = msg.payload.alert_cleared;\nconst pressureThreshold = 2;\n//PSI Threshold = 1\nvar newMsg = {\n    payload: {\n        alert: pressureValue < pressureThreshold, //temp check to see if this logic would work\n        pressureValue: pressureValue,\n        timestamp: timestamp\n    },\n    topic: msg.topic\n};\n\n// Add the alert status as a tag\n/*newMsg.tags = {\n    alert: pressureValue < pressureThreshold ? \"true\" : \"false\"\n};*/\n\n// Return the modified message for the InfluxDB flow\nreturn newMsg;\n/*\n/*if (pressureValue < pressureThreshold) {\n    msg.alert = true;\n    msg.timestamp = timestamp; // Include timestamp for alert\n} else {\n    msg.alert = false;\n}\nvar newMsg = {\n    payload: {\n        alert: pressureValue < pressureThreshold,\n        pressureValue: pressureValue,\n        timestamp: timestamp\n    },\n    topic: msg.topic\n};\n//topic: msg.topic\n\nreturn newMsg;\n*/",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 570,
+        "y": 1380,
+        "wires": [
+            [
+                "80de07891181d8a6"
+            ]
+        ]
+    },
+    {
+        "id": "31012059d5842c6e",
+        "type": "switch",
+        "z": "6a8ca03819747757",
+        "name": "routing",
+        "property": "payload.alert",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "false"
+            },
+            {
+                "t": "true"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 1090,
+        "y": 1380,
+        "wires": [
+            [],
+            [
+                "9115c6ed68ed7ce3",
+                "b5a1b522f23bb54f"
+            ]
+        ]
+    },
+    {
+        "id": "a8615f4c4f978b20",
+        "type": "influxdb out",
+        "z": "6a8ca03819747757",
+        "influxdb": "787c32ed71fc3d33",
+        "name": "alerts_filter1",
+        "measurement": "alert",
+        "precision": "",
+        "retentionPolicy": "",
+        "database": "database",
+        "precisionV18FluxV20": "ms",
+        "retentionPolicyV18Flux": "",
+        "org": "organisation",
+        "bucket": "alerts_filter1",
+        "x": 1650,
+        "y": 1420,
+        "wires": []
+    },
+    {
+        "id": "d315052f025c8f94",
+        "type": "debug",
+        "z": "6a8ca03819747757",
+        "name": "pressure_alert_bucket",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload.alert",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1680,
+        "y": 1560,
+        "wires": []
+    },
+    {
+        "id": "9115c6ed68ed7ce3",
+        "type": "change",
+        "z": "6a8ca03819747757",
+        "name": "add_cleared_tag",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload.cleared",
+                "pt": "msg",
+                "to": "false",
+                "tot": "bool"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 1450,
+        "y": 1480,
+        "wires": [
+            [
+                "a8615f4c4f978b20",
+                "d315052f025c8f94"
+            ]
+        ]
+    },
+    {
+        "id": "80de07891181d8a6",
+        "type": "function",
+        "z": "6a8ca03819747757",
+        "name": "format time",
+        "func": "msg.payload.timestamp = new Date(msg.payload.timestamp).toLocaleString();\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 810,
+        "y": 1380,
+        "wires": [
+            [
+                "9ebd457a1790f88c",
+                "31012059d5842c6e",
+                "1ba09ff92dbd0646"
+            ]
+        ]
+    },
+    {
+        "id": "9ebd457a1790f88c",
+        "type": "debug",
+        "z": "6a8ca03819747757",
+        "d": true,
+        "name": "from pressure",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1000,
+        "y": 1500,
+        "wires": []
+    },
+    {
+        "id": "d9e550fb5be1955b",
+        "type": "function",
+        "z": "6a8ca03819747757",
+        "name": "valve function",
+        "func": "msg.payload = {\n    value: msg.payload.value,\n    timestamp: msg.payload.timestamp\n}\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 560,
+        "y": 1060,
+        "wires": [
+            [
+                "dd7306c4ea522411",
+                "8eb64800a12bcc83"
+            ]
+        ]
+    },
+    {
+        "id": "dd7306c4ea522411",
+        "type": "debug",
+        "z": "6a8ca03819747757",
+        "d": true,
+        "name": "valve debug",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 690,
+        "y": 1000,
+        "wires": []
+    },
+    {
+        "id": "d27b729dd0ac647e",
+        "type": "function",
+        "z": "6a8ca03819747757",
+        "name": "flow function",
+        "func": "const flowValue = msg.payload.value;\nconst timestamp = msg.payload.timestamp;\nconst flowThreshold = 5;\n//GPM threshold = 3\n/*if (flowValue < pressureThreshold) {\n    msg.alert = true;\n    msg.timestamp = timestamp; // Include timestamp for alert\n} else {\n    msg.alert = false;\n}*/\n\nvar newMsg = {\n    payload:{\n        alert: flowValue < flowThreshold,\n        flowValue: flowValue,\n        timestamp: timestamp\n    },\n    topic: msg.topic\n}\n\nreturn newMsg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 550,
+        "y": 1180,
+        "wires": [
+            [
+                "bd815dfc43d9ef16",
+                "a24eb157778f9208"
+            ]
+        ]
+    },
+    {
+        "id": "bd815dfc43d9ef16",
+        "type": "debug",
+        "z": "6a8ca03819747757",
+        "d": true,
+        "name": "flow debug ",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 610,
+        "y": 1240,
+        "wires": []
+    },
+    {
+        "id": "a7bd3778dbf6c372",
+        "type": "debug",
+        "z": "6a8ca03819747757",
+        "name": "from mqtt in",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 130,
+        "y": 1000,
+        "wires": []
+    },
+    {
+        "id": "b5a1b522f23bb54f",
+        "type": "debug",
+        "z": "6a8ca03819747757",
+        "name": "debug 1",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1340,
+        "y": 1560,
+        "wires": []
+    },
+    {
+        "id": "a24eb157778f9208",
+        "type": "function",
+        "z": "6a8ca03819747757",
+        "name": "format time",
+        "func": "msg.payload.timestamp = new Date(msg.payload.timestamp).toLocaleString();\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 770,
+        "y": 1180,
+        "wires": [
+            [
+                "33506614f4328067",
+                "75bbb7bce301df25"
+            ]
+        ]
+    },
+    {
+        "id": "8eb64800a12bcc83",
+        "type": "function",
+        "z": "6a8ca03819747757",
+        "name": "format time",
+        "func": "msg.payload.timestamp = new Date(msg.payload.timestamp).toLocaleString();\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 770,
+        "y": 1060,
+        "wires": [
+            [
+                "fbbc4d79b949f063"
+            ]
+        ]
+    },
+    {
+        "id": "82ed31c73feaecec",
+        "type": "comment",
+        "z": "6a8ca03819747757",
+        "name": "alert/value/timestamp/cleared_tag",
+        "info": "",
+        "x": 1430,
+        "y": 1660,
+        "wires": []
+    },
+    {
+        "id": "787c32ed71fc3d33",
+        "type": "influxdb",
+        "hostname": "127.0.0.1",
+        "port": 8086,
+        "protocol": "http",
+        "database": "database",
+        "name": "HydraSense",
+        "usetls": false,
+        "tls": "",
+        "influxdbVersion": "2.0",
+        "url": "https://us-east-1-1.aws.cloud2.influxdata.com",
+        "timeout": 10,
+        "rejectUnauthorized": true
+    },
+    {
+        "id": "c4895a47c49d754a",
+        "type": "mqtt-broker",
+        "name": "",
+        "broker": "99.73.216.217",
+        "port": 1883,
+        "clientid": "",
+        "autoConnect": true,
+        "usetls": false,
+        "protocolVersion": 4,
+        "keepalive": 60,
+        "cleansession": true,
+        "autoUnsubscribe": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthRetain": "false",
+        "birthPayload": "",
+        "birthMsg": {},
+        "closeTopic": "",
+        "closeQos": "0",
+        "closeRetain": "false",
+        "closePayload": "",
+        "closeMsg": {},
+        "willTopic": "",
+        "willQos": "0",
+        "willRetain": "false",
+        "willPayload": "",
+        "willMsg": {},
+        "userProps": "",
+        "sessionExpiry": ""
+    },
+    {
+        "id": "343397a9ad2f3cc1",
+        "type": "mqtt-broker",
+        "name": "test1",
+        "broker": "75.10.13.13",
+        "port": 1883,
+        "clientid": "",
+        "autoConnect": true,
+        "usetls": false,
+        "protocolVersion": 4,
+        "keepalive": 60,
+        "cleansession": true,
+        "autoUnsubscribe": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthRetain": "false",
+        "birthPayload": "",
+        "birthMsg": {},
+        "closeTopic": "",
+        "closeQos": "0",
+        "closeRetain": "false",
+        "closePayload": "",
+        "closeMsg": {},
+        "willTopic": "",
+        "willQos": "0",
+        "willRetain": "false",
+        "willPayload": "",
+        "willMsg": {},
+        "userProps": "",
+        "sessionExpiry": ""
+    },
+    {
+        "id": "fef4c2ed13724d63",
+        "type": "mqtt-broker",
+        "name": "",
+        "broker": "192.168.1.101",
+        "port": 1883,
+        "clientid": "",
+        "autoConnect": true,
+        "usetls": false,
+        "protocolVersion": 4,
+        "keepalive": 60,
+        "cleansession": true,
+        "autoUnsubscribe": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthRetain": "false",
+        "birthPayload": "",
+        "birthMsg": {},
+        "closeTopic": "",
+        "closeQos": "0",
+        "closeRetain": "false",
+        "closePayload": "",
+        "closeMsg": {},
+        "willTopic": "",
+        "willQos": "0",
+        "willRetain": "false",
+        "willPayload": "",
+        "willMsg": {},
+        "userProps": "",
+        "sessionExpiry": ""
+    }
+]
