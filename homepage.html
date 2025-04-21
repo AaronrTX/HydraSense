@@ -232,6 +232,24 @@
                 flex: 1;
                 word-wrap: break-word;
             }
+
+            .clear-button {
+                display: block;               /* Forces it onto a new line */
+                margin-top: 10px;             /* Adds spacing from text */
+                padding: 8px 14px;
+                background-color: #d9534f;
+                color: white;
+                border: none;
+                border-radius: 20px;          /* Rounded edges */
+                cursor: pointer;
+                font-weight: bold;
+                transition: background-color 0.3s ease;
+                }
+
+            .clear-button:hover {
+                background-color: #0044ff;
+            }
+
         </style>
     </head>
 
@@ -256,11 +274,11 @@
                 <section class="metrics">
                     <div class="metric">
                         <h2>Pressure</h2>
-                        <iframe src="http://localhost:3000/d-solo/bee1te12hfny8b/pressure-bucket?orgId=1&from=1742438657766&to=1742439557766&timezone=browser&refresh=auto&panelId=1&__feature.dashboardSceneSolo"></iframe>
+                        <iframe src="http://localhost:3000/d-solo/bee1te12hfny8b/pressure-bucket?orgId=1&timezone=browser&refresh=auto&panelId=1&__feature.dashboardSceneSolo" width="450" height="200" frameborder="0"></iframe>
                     </div>
                     <div class="metric">
                         <h2>Flow</h2>
-                        <iframe src="http://localhost:3000/d-solo/aee272f3ajpxcf/temperature-bucket?orgId=1&from=1742438619617&to=1742439519618&timezone=browser&refresh=auto&panelId=1&__feature.dashboardSceneSolo"></iframe>
+                        <iframe src="http://localhost:3000/d-solo/aee272f3ajpxcf/flow-bucket?orgId=1&timezone=browser&refresh=auto&panelId=1&__feature.dashboardSceneSolo" width="450" height="200" frameborder="0"></iframe>
                     </div>
                 </section>
 
@@ -296,7 +314,7 @@
                     if (data.value !== undefined) {
                         const status = data.status.toUpperCase();
                         statusText.innerText = `${status}`;
-                        statusToggle.checked = data.value === 1; // Open = ON
+                        statusToggle.checked = data.value === 0; // Open = ON
                     } else {
                         statusText.innerText = "Status: Unknown";
                     }
@@ -336,6 +354,7 @@
 
                 if (alerts.length === 0) {
                     alertList.innerHTML = `<div class="alert-card"><span class="alert-icon">✅</span><span class="alert-text">All systems are normal.</span></div>`;
+                    //change later to a green checkmark
                 } else {
                     alerts.forEach((alert) => {
                         //alertList.innerHTML += `<div class="alert-card"><span class="alert-icon">⚠️</span><span class="alert-text">${alert}</span></div>`;
@@ -358,6 +377,8 @@
                             clearButton.textContent = "Clear";
                             clearButton.setAttribute("data-alert-key", alert.key);
                             clearButton.addEventListener("click", () => clearAlert(alert.key));
+                            clearButton.classList.add("clear-button");
+                            alertDiv.appendChild(document.createElement("br"));  // Add space between text and button
                             alertDiv.appendChild(clearButton);
                         }
 
