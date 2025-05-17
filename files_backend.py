@@ -27,6 +27,8 @@ import logging
 #pip install pytz
 import pytz # type: ignore
 
+# We used vs code live server to test the backend, so we need to allow CORS for it to work
+# You can change the origin to your own frontend URL
 app = Flask(__name__)
 CORS(app, origins = ["http://127.0.0.1:5500"])
 
@@ -34,6 +36,8 @@ startup_time = datetime.now(timezone.utc)
 sent_alerts = set()
 
 # InfluxDB connection details
+#USE YOUR OWN INFLUXDB URL, TOKEN, ORG, BUCKETS
+# You can create a new bucket in your InfluxDB Cloud account and use it for testing
 INFLUXDB_URL = "https://us-east-1-1.aws.cloud2.influxdata.com"
 INFLUXDB_TOKEN = "u4qevo7QbZxbknS9-lpGklPOxMPg5pH7PPzRqFT7VxdPzCnLxqW0Y_h4k7oTyIiOr0cbMJ9GlcH_5JOK7O4z8Q=="
 INFLUXDB_ORG = "Dev team"
@@ -45,12 +49,6 @@ FLOW_BUCKET = "flow_sensor" #flow sensor, for now its temperature
 FLOW_ALERT = "alerts_filter2"#alerts for flow sensor
 VALVE_BUCKET = "reed_switch" #reads valve status"""
 
-"""
-#for testing purposes
-FLOW_BUCKET = "test_data_bucket"
-FLOW_ALERT = "test_filter_bucket"
-PRESSURE_BUCKET = "demo_2"
-PRESSURE_ALERT = "alerts_filter1"""
 
 #timezone declaration
 utc = pytz.utc
@@ -61,9 +59,9 @@ Email alert configuration
 ==========================================================================================================
 =========================================================================================================="""
 def send_email(subject, body, alert_key):
-    sender_email = "hydrasense2025@gmail.com"  
-    sender_password = "fycw zltn nror aycq"    
-    recipient_email = "hydrasense2025@gmail.com"  
+    sender_email = "USE YOUR OWN EMAIL, PREFERABLY GMAIL"  
+    sender_password = "CREATE AN APP PASSWORD FOR YOUR GMAIL ACCOUNT"    
+    recipient_email = "USE YOUR OWN EMAIL, PREFERABLY GMAIL"  
 
     
 
@@ -127,8 +125,6 @@ def download_data():
         for record in table.records:
             csv_writer.writerow([record.get_time(), record.get_value(), record.get_field(), record.get_measurement()])
 
-    #csv_content = output.getvalue()
-    #output.close()
 
     return Response(
         output.getvalue(),
@@ -325,9 +321,6 @@ def generate_report():
 
                 # Format time in 12-hour format
                 formatted_time = central_time.strftime("%Y-%m-%d %I:%M:%S %p")
-
-                # Use the value directly from the database and round to 2 decimal places
-                #formatted_value = round(float(record.get_value()), 2)
 
                 # Append data to the table
                 try:

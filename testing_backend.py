@@ -16,10 +16,13 @@ import time
 import logging
 
 app = Flask(__name__)
+# We used vs code live server to test the backend, so we need to allow CORS for it to work
+# You can change the origin to your own frontend URL
 CORS(app, origins=["http://127.0.0.1:5500"])
 
 startup_time = datetime.now(timezone.utc)
 sent_alerts = set()
+
 
 INFLUXDB_URL = "https://us-east-1-1.aws.cloud2.influxdata.com"
 INFLUXDB_TOKEN = "u4qevo7QbZxbknS9-lpGklPOxMPg5pH7PPzRqFT7VxdPzCnLxqW0Y_h4k7oTyIiOr0cbMJ9GlcH_5JOK7O4z8Q=="
@@ -33,9 +36,9 @@ utc = pytz.utc
 central = pytz.timezone('America/Chicago')
 
 def send_email(subject, body, alert_key):
-    sender_email = "hydrasense2025@gmail.com"
-    sender_password = "fycw zltn nror aycq"
-    recipient_email = "hydrasense2025@gmail.com"
+    sender_email = "USE YOUR OWN EMAIL, PREFERABLY GMAIL"
+    sender_password = "CREATE AN APP PASSWORD FOR YOUR GMAIL ACCOUNT"
+    recipient_email = "USE YOUR OWN EMAIL, PREFERABLY GMAIL"
 
     if alert_key in sent_alerts:
         print(f"Alert '{alert_key}' already sent. Skipping")
