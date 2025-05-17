@@ -92,7 +92,7 @@ To use that example, follow these steps :
 
 To put in an MQTT node 
 Server Config
-  Server = mqtt.g-perez.net
+  Server = USE YOUR OWN BROKER IP
     a. Hit the connect automatically button
   Protocol = MQTT V3.1.1
   Keep Alive = 60 
@@ -104,6 +104,8 @@ Output = auto-detect
 You can add a debug node and connect it to see the msg.payload messgaes (click on the debug window)
 
 **How to Run WebPage** 
+Disclaimer: You need to setup a dummy account (preferably gmail), and create a app password.
+You will need this information to send emails to the account
 
 -  Make sure that you have Git configured and have this repository cloned
 -  Additonally, make sure you have some sort of live server addition to the code editor for VSCode I use Live Server
